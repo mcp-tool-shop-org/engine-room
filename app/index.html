@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>engine-room — Control Panel</title>
+<link rel="stylesheet" href="styles.css">
+<template id="__bundler_thumbnail">
+  <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <rect width="100" height="100" fill="#0a1422"/>
+    <g transform="translate(50 50)" fill="none" stroke="#34e0a1">
+      <circle r="22" stroke-width="2" opacity=".4"/>
+      <circle r="7" fill="#34e0a1" stroke="none"/>
+      <path d="M0-22V-9M0 9V22M-22 0H-9M9 0H22" stroke-width="2" stroke-linecap="round"/>
+    </g>
+  </svg>
+</template>
+</head>
+<body>
+<div class="app" id="app" data-online="true">
+
+  <!-- ============ Top bar ============ -->
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark" id="brand-mark"></span>
+      <span class="brand-name">engine<span class="dash">-</span>room</span>
+    </div>
+    <div class="rig-strip" aria-label="rig status">
+      <div class="rig-item"><span class="rig-k">GPU</span><span class="rig-v mono" id="rig-gpu"></span></div>
+      <div class="rig-item"><span class="rig-k">VRAM</span><span class="rig-v mono" id="rig-vram"></span></div>
+      <div class="rig-item"><span class="rig-k">Driver</span><span class="rig-v mono" id="rig-driver"></span></div>
+      <div class="rig-item"><span class="rig-k">CUDA</span><span class="rig-v mono" id="rig-cuda"></span></div>
+    </div>
+    <div class="top-actions">
+      <button class="exec-toggle" id="exec" data-act="toggle-exec" data-online="true" aria-label="toggle executor connection">
+        <span class="exec-dot"></span><span class="exec-label">Executor connected</span>
+      </button>
+      <button class="icon-btn" data-act="toggle-theme" aria-label="toggle light/dark theme"><span id="theme-ico"></span></button>
+    </div>
+  </header>
+
+  <!-- ============ Read-only banner ============ -->
+  <div class="readonly-banner" id="readonly-banner" role="status" hidden>
+    <span class="dot"></span>
+    <span><b>Read-only.</b> No executor is connected — this is your everyday “what can I run?” browser. Recipes, baselines, and trust signals are all visible; running is disabled until you connect.</span>
+  </div>
+
+  <!-- ============ Main split ============ -->
+  <div class="main" id="main">
+    <!-- Catalog -->
+    <section class="catalog-col" aria-label="recipe catalog">
+      <div class="filterbar">
+        <div class="search">
+          <span id="search-ico" style="color:var(--ink-faint);display:flex"></span>
+          <input id="search" type="search" placeholder="Search recipes, backends, kinds…" aria-label="search recipes">
+        </div>
+        <div class="filter-row" role="group" aria-label="filter by kind">
+          <span class="filter-label">kind</span>
+          <button class="chip" data-act="filter-kind" data-filter-kind="launchable-server" aria-pressed="false">server</button>
+          <button class="chip" data-act="filter-kind" data-filter-kind="batch-producer" aria-pressed="false">producer</button>
+          <button class="chip" data-act="filter-kind" data-filter-kind="modifier" aria-pressed="false">modifier</button>
+          <button class="chip" data-act="filter-kind" data-filter-kind="router-fleet" aria-pressed="false">router</button>
+        </div>
+        <div class="filter-row" role="group" aria-label="filter by trust">
+          <span class="filter-label">trust</span>
+          <button class="chip" data-act="filter-flag" data-filter-flag="verified" aria-pressed="false">verified</button>
+          <button class="chip" data-act="filter-flag" data-filter-flag="resolvable" aria-pressed="false">resolvable</button>
+          <button class="chip" data-act="filter-flag" data-filter-flag="commercial" aria-pressed="false">commercial</button>
+        </div>
+      </div>
+      <div class="catalog" id="catalog" role="listbox" aria-label="engine recipes" tabindex="0"></div>
+    </section>
+
+    <!-- Detail -->
+    <section class="detail-col" id="detail" aria-label="recipe detail" aria-live="polite"></section>
+  </div>
+
+  <div id="modal-host"></div>
+  <div class="toasts" id="toasts" aria-live="polite"></div>
+</div>
+
+<script src="data.js"></script>
+<script src="engine.js"></script>
+<script src="ui.js"></script>
+<script>
+  // hydrate static chrome that depends on RIG / ICON (after scripts load)
+  document.getElementById('brand-mark').innerHTML = ICON.reactor.replace('fill="none"', 'fill="none" style="color:var(--accent)"');
+  document.getElementById('search-ico').innerHTML = ICON.search;
+  document.getElementById('theme-ico').innerHTML = ICON.moon;
+  document.getElementById('rig-gpu').textContent = RIG.gpu;
+  document.getElementById('rig-vram').textContent = RIG.vramCeiling + ' GB';
+  document.getElementById('rig-driver').textContent = RIG.driver;
+  document.getElementById('rig-cuda').textContent = RIG.cuda + ' · ' + RIG.sm;
+</script>
+</body>
+</html>
