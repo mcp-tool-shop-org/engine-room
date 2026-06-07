@@ -1,0 +1,16 @@
+[project]
+name = "engine-room"
+version = "0.1.0"
+description = "Recipe-driven provisioner for local AI engines — the executor over the tensor-engine recipe layer"
+requires-python = ">=3.10"
+dependencies = []   # stdlib-only by design (sqlite3 + subprocess); providers add their own at materialize-time
+
+[project.scripts]
+er = "executor.cli:main"
+
+[tool.setuptools]
+packages = ["executor"]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
