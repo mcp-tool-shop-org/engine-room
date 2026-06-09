@@ -22,13 +22,13 @@
 
 | Item | Status |
 |------|--------|
-| Logo in README header | pending — later treatment phase |
-| Translations (8 languages) | pending — later treatment phase |
-| Landing page (@mcptoolshop/site-theme) | pending — later treatment phase |
-| GitHub repo metadata (description, homepage, topics) | pending — later treatment phase |
+| Logo in README header | ✅ done — centered logo + CI/MIT/Landing badges |
+| Translations (ja/zh/es/fr/hi/it/pt-BR) | ✅ done — local TranslateGemma |
+| Landing page (@mcptoolshop/site-theme) | ✅ done — live at mcp-tool-shop-org.github.io/engine-room/ + Starlight handbook |
+| GitHub repo metadata (description, homepage, topics) | ✅ done |
 
-Section E is intentionally deferred to the later full-treatment phases and does not block the
-1.0.0 ship.
+All gates complete — `shipcheck audit` exits 0 (23 checked, 14 SKIP, 0 unchecked, 100%).
+engine-room v1.0.0 is shipped: tag + GitHub release, landing page + handbook live, CI green.
 
 ## Evidence
 

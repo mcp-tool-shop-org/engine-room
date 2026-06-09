@@ -57,10 +57,10 @@
 
 ## E. Identity (soft gate — does not block ship)
 
-- [ ] `[all]` Logo in README header
-- [ ] `[all]` Translations (polyglot-mcp, 8 languages)
-- [ ] `[org]` Landing page (@mcptoolshop/site-theme)
-- [ ] `[all]` GitHub repo metadata: description, homepage, topics
+- [x] `[all]` Logo in README header (2026-06-09)
+- [x] `[all]` Translations (polyglot-mcp — ja/zh/es/fr/hi/it/pt-BR) (2026-06-09)
+- [x] `[org]` Landing page (@mcptoolshop/site-theme — live) (2026-06-09)
+- [x] `[all]` GitHub repo metadata: description, homepage, topics (2026-06-09)
 
 ---
 
