@@ -22,6 +22,27 @@ engine-room is the **action** half of a deliberate split:
 - **Action** — this repo: resolving a recipe against the live rig, materializing it,
   launching/measuring it, and rolling it back safely. It changes when the *rig* changes.
 
+## Getting the recipe layer
+
+engine-room is the **action** half; it does not ship the recipes. The **knowledge** half is a
+separately-provided, verified artifact — the **tensor-engine-knowledge** recipe DB
+(`engines.db`) — that you point `er` at. Cloning this repo alone gives you the executor, not the
+catalog.
+
+- **Detect your rig** with no recipe DB at all: `er rig` reads only the live hardware
+  (`nvidia-smi` + env), so it works out of the box.
+- **Point at the recipe DB** for everything else (`list` / `show` / `preflight` / `provision`)
+  one of two ways:
+  - set `ER_RECIPES_DB` to the DB path, or
+  - pass `--db <path>` on any command.
+- If neither is set, `er` looks for `../../readouts/tensor-engine-knowledge/engines.db` relative
+  to the repo. When the DB is missing you get a clear error
+  (`recipe DB not found: … — set $ER_RECIPES_DB or pass --db`), not a stack trace.
+
+The recipe layer is the trusted knowledge input (see [Security / threat model](#security--threat-model)).
+Obtain `engines.db` from the tensor-engine-knowledge distribution; engine-room reads it
+**read-only** and never writes it.
+
 A recipe is **polymorphic** — four kinds, each with a different shape:
 
 | Kind | What it does | Measured by |

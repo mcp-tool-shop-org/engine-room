@@ -16,6 +16,7 @@ Two helpers the per-domain test modules build on:
         'wsl-floor'   launchable-server / wsl2-docker / tok_s. defect_floor 'wsl2>=2.7.0' (halt/warn/pass triad).
         'toolkit-12-8' launchable-server / native-win-compile / tok_s. capability 'cuda_toolkit==12.8' (warn/halt).
         'indep-base'  batch-producer / venv / bits_per_weight. ONE model-INDEPENDENT (NULL-model) baseline.
+        'unmapped-expr' launchable-server / native-win-compile. requires_when 'torch_cuda==cu130' (no evaluator handler).
 
   fake_rig(**overrides) -> rig.Rig
       A Blackwell-default Rig you can override per-field, so resolve()/provider tests don't
@@ -137,6 +138,14 @@ def build_min_db(path: str) -> str:
                    'quantize',' ',1,1)""")
     cur.execute("""INSERT INTO recipe_baselines(recipe_id,model_name,axis,bound_dir,value,unit)
                    VALUES (7,NULL,'bits_per_weight','lower',4.5,'bpw')""")
+
+    # 8) unmapped-expr — a constraint whose expr shape the evaluator has NO handler for (note vs deferred)
+    cur.execute("""INSERT INTO recipes(id,slug,name,category_id,recipe_kind,backend_kind,measured_axis,
+                   summary,body,verified,executable)
+                   VALUES (8,'unmapped-expr','new KB constraint shape',1,'launchable-server','native-win-compile',
+                   'tok_s','future expr',' ',1,1)""")
+    cur.execute("""INSERT INTO recipe_constraints(recipe_id,ctype,expr,reason)
+                   VALUES (8,'requires_when','torch_cuda==cu130','a KB expr shape with no evaluator handler')""")
 
     con.commit()
     con.close()

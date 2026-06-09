@@ -45,12 +45,15 @@ credentials. The only network access is the artifact downloads described above.
 
 ## Reporting a vulnerability
 
-Please report security issues privately via **GitHub Security Advisories**:
+Private vulnerability reporting is **enabled** on this repo, so the preferred route is GitHub's
+private advisories form — it opens a confidential channel between you and the maintainers, no
+public trace:
 
-- https://github.com/mcp-tool-shop-org/engine-room/security/advisories/new
+- **Report:** https://github.com/mcp-tool-shop-org/engine-room/security/advisories/new
+  (or, on the repo, the **Security → Report a vulnerability** button)
 
-If advisories are unavailable to you, open a regular issue that describes the impact without a
-working exploit and we will move it to a private advisory:
+If you can't reach that form, open a regular issue that describes the impact **without** a
+working exploit and we'll move it to a private advisory:
 
 - https://github.com/mcp-tool-shop-org/engine-room/issues
 

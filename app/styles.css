@@ -233,12 +233,16 @@ button { font-family: inherit; cursor: pointer; }
 .status-pill[data-s="applied"] { color: #c08bf0; } .status-pill[data-s="applied"] .sdot { background: #c08bf0; }
 .status-pill[data-s="halted"]  { color: var(--andon); border-color: var(--andon-dim); } .status-pill[data-s="halted"] .sdot { background: var(--andon); }
 .status-pill[data-s="stale"]   { color: var(--warn); border-color: var(--warn-dim); } .status-pill[data-s="stale"] .sdot { background: var(--warn); }
+.status-pill[data-s="disconnected"] { color: var(--warn); border-color: var(--warn-dim); } .status-pill[data-s="disconnected"] .sdot { background: var(--warn); }
 .status-pill[data-busy="true"] .sdot { animation: blink 1s steps(2) infinite; }
 @keyframes blink { 50% { opacity: .3; } }
 
 /* ---------- Empty / loading states ---------- */
-.empty-state { margin: auto; text-align: center; color: var(--ink-faint); padding: 40px; }
+.empty-state { margin: auto; text-align: center; color: var(--ink-faint); padding: 40px; max-width: 320px; }
 .empty-state svg { width: 48px; height: 48px; opacity: .5; margin-bottom: 12px; }
+.empty-state .tiny { margin-top: 6px; }
+.empty-state .btn { display: inline-flex; }
+.empty-state.empty-error svg { color: var(--warn); opacity: .85; }
 .skeleton { background: linear-gradient(90deg, var(--hair) 25%, var(--hair-strong) 37%, var(--hair) 63%);
   background-size: 400% 100%; animation: shimmer 1.4s infinite; border-radius: 6px; }
 @keyframes shimmer { 0% { background-position: 100% 0; } 100% { background-position: -100% 0; } }
@@ -321,6 +325,10 @@ button { font-family: inherit; cursor: pointer; }
 .step-cmd { font-family: var(--font-mono); font-size: 11px; color: var(--ink-faint); white-space: nowrap;
   overflow: hidden; text-overflow: ellipsis; }
 .step[data-st="active"] .step-cmd { color: var(--cyan); }
+.step-progress { display: flex; align-items: center; gap: 8px; margin-top: 7px; }
+.step-progress .meter { flex: 1; height: 6px; }
+.step-progress .step-pct { font-size: 10.5px; color: var(--ink-dim); flex: 0 0 auto; min-width: 30px; text-align: right; }
+.step[data-st="active"] .step-progress .meter-fill { transition: width .2s linear; }
 
 /* ---------- Gauges ---------- */
 .gauges { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
@@ -372,6 +380,13 @@ button { font-family: inherit; cursor: pointer; }
 .lineage { display: inline-flex; align-items: center; gap: 8px; font-family: var(--font-mono); font-size: 11.5px;
   padding: 5px 10px; border-radius: 8px; background: var(--cyan-dim); color: var(--ink); border: 1px solid var(--cyan); margin-top: 10px; }
 .lineage .arrow { color: var(--cyan); }
+
+/* connection-lost notice — executor dropped mid-flight (distinct from an ANDON halt) */
+.conn-lost { display: flex; align-items: flex-start; gap: 10px; margin-top: 12px;
+  padding: 11px 14px; border-radius: 10px; font-size: 12.5px; line-height: 1.5; color: var(--ink);
+  background: var(--warn-dim); border: 1px solid var(--warn); }
+.conn-lost svg { width: 16px; height: 16px; flex: 0 0 auto; margin-top: 1px; color: var(--warn); }
+.conn-lost b { font-weight: 600; }
 
 /* ---------- Modifier delta gauge ---------- */
 .delta-wrap { display: flex; gap: 14px; flex-wrap: wrap; }

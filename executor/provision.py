@@ -15,7 +15,7 @@ Live-execute safety (first cut, native-win-compile / llama.cpp):
   * any step fails -> ANDON: stop, run compensators newest-first, never mark ready
 """
 from __future__ import annotations
-import hashlib, json, os, shutil, subprocess, time, urllib.request, zipfile
+import hashlib, json, os, shutil, subprocess, time, urllib.request
 from dataclasses import dataclass, field
 from .recipes import Recipe
 from .rig import Rig
@@ -216,15 +216,43 @@ def _sha256_file(path: str) -> str:
     return h.hexdigest()
 
 def _download(ref: str, dest: str, sha: str | None) -> str:
+    """Atomically vendor `ref` to `dest`, content-addressed. Returns the full sha256.
+
+    PROVISION-B-001 (atomicity): fetch to dest+'.part', verify the sha (when present) on the .part,
+    and only THEN os.replace(.part -> dest). A mid-stream failure (or a sha mismatch) leaves the
+    .part behind (best-effort removed) and NEVER materializes `dest`, so a truncated/forged body
+    can't become a silent cache hit on the next run. An existing `dest` is a real, already-verified
+    cache hit -> just re-hash it and return.
+
+    sha absent/placeholder -> skip the compare (honest optional-pin state). sha present -> verify in
+    FULL (a 48-bit prefix compare let a forged near-collision pass — PROVISION-A-004)."""
     os.makedirs(os.path.dirname(dest), exist_ok=True)
-    if not os.path.exists(dest):
-        urllib.request.urlretrieve(ref, dest)
-    h = _sha256_file(dest)
-    # sha absent/placeholder -> skip (honest optional-pin state). sha present -> verify in FULL
-    # (a 48-bit prefix compare let a forged near-collision pass — PROVISION-A-004).
-    if sha and sha not in ("<sha256>", "", None) and h != sha:
-        raise RuntimeError(f"sha256 mismatch: got {h} expected {sha}")
-    return h
+    part = dest + ".part"
+    if os.path.exists(dest):
+        # a verified cache hit — self-heal any stray .part an earlier crash left mid-fetch, so the
+        # cache dir doesn't accumulate orphaned partials. Best-effort; never mask the cache hit.
+        try:
+            if os.path.exists(part):
+                os.remove(part)
+        except OSError:
+            pass
+        return _sha256_file(dest)
+    try:
+        urllib.request.urlretrieve(ref, part)
+        h = _sha256_file(part)
+        if sha and sha not in ("<sha256>", "", None) and h != sha:
+            raise RuntimeError(f"sha256 mismatch: got {h} expected {sha}")
+        os.replace(part, dest)   # only a fully-fetched, sha-verified body becomes the cache entry
+        return h
+    except BaseException:
+        # truncated/aborted fetch or a failed verify: drop the partial so the next run is a clean
+        # cache MISS, never a hit on a half-written file. Best-effort — never mask the real error.
+        try:
+            if os.path.exists(part):
+                os.remove(part)
+        except OSError:
+            pass
+        raise
 
 def _alive(pid: int):
     """Is pid running? Parse the PID *column* of tasklist's CSV output, not a raw substring of
@@ -348,6 +376,20 @@ def compensate(iid: str):
     _ledger_put(iid, e)
 
 
+def _run_log_path(inst: str) -> str:
+    return os.path.join(inst, "run.log")
+
+def _run_log(inst: str, line: str):
+    """Append one timestamped phase line to {inst}/run.log (PROVISION-B-004). Best-effort —
+    a logging failure must never mask the real reconcile error / fail a healthy run."""
+    try:
+        os.makedirs(inst, exist_ok=True)
+        with open(_run_log_path(inst), "a", encoding="utf-8") as f:
+            f.write(f"{time.strftime('%Y-%m-%dT%H:%M:%S')}  {line}\n")
+    except OSError:
+        pass
+
+
 def run(recipe: Recipe, rig: Rig, execute: bool = False, model: str | None = None, port: int = 8080, from_dir: str | None = None):
     p = plan(recipe, rig, model=model, port=port, from_dir=from_dir)
     print(f"recipe   {p.recipe}  ({recipe.kind} / {p.backend})")
@@ -363,96 +405,61 @@ def run(recipe: Recipe, rig: Rig, execute: bool = False, model: str | None = Non
         print("\nDRY-RUN — nothing executed. Re-run with --execute (+ --model <gguf>, optional --from <dir>).")
         return
 
-    # ---- EXECUTE ----
+    # ---- EXECUTE: backend-agnostic orchestration (PROVISION-B-005) ----
+    # run() owns the ledger + run.log + compensator bookkeeping; the provider owns the
+    # backend-specific materialize/launch/probe bodies behind the contract.
     if not model:
         raise SystemExit("--model <gguf> required for --execute")
+    from . import providers
+    provider = providers.provider_for(recipe)
+    if provider is None or not provider.reconcile_implemented:
+        raise SystemExit(f"provider '{recipe.backend}' not implemented for execute — "
+                         f"native-win-compile is the first slice")
     iid, inst = p.instance_id, p.inst_dir
     entry = {"recipe": recipe.slug, "instance_id": iid, "inst_dir": inst, "state": "starting",
              "started_at": time.time(), "compensators": []}
     _ledger_put(iid, entry)                                   # ledger BEFORE side effects
+
+    def update(*, log: str | None = None, artifact: str | None = None,
+               artifact_sha: str | None = None, **fields):
+        """Ledger-update callback handed to the provider: echo + log each phase, fold artifact
+        refs/shas into the ledger, and persist. Keeps the provider free of ledger/log plumbing."""
+        if log is not None:
+            print(f"  {log}")
+            _run_log(inst, log)
+        if artifact is not None:
+            entry.setdefault("artifacts", []).append({"ref": artifact, "sha256": artifact_sha})
+        if fields:
+            entry.update(fields)
+        _ledger_put(iid, entry)
+
     try:
         os.makedirs(inst, exist_ok=True)
         entry["compensators"].append({"kind": "rmtree", "path": inst}); _ledger_put(iid, entry)
-        # materialize
-        if from_dir:
-            if not os.path.isdir(from_dir):
-                raise RuntimeError(f"--from dir not found: {from_dir}")
-            engine_dir = from_dir
-            print(f"  [materialize] reusing existing engine dir: {from_dir}")
-        else:
-            engine_dir = inst
-            for ref, vpath, sha in _vendor_targets(recipe):
-                if not ref.lower().endswith((".zip", ".whl", ".tar.gz", ".7z")):
-                    raise RuntimeError(f"ANDON: artifact is not a direct file (a releases page): {ref}\n"
-                                       f"  fix the recipe's pin to a concrete asset URL, or use --from <existing dir>")
-                print(f"  [materialize] vendor {ref}")
-                _download(ref, vpath, sha)
-                if ref.lower().endswith(".zip"):
-                    with zipfile.ZipFile(vpath) as z: z.extractall(inst)
-        # locate llama-server.exe
-        server = None
-        for r, _, files in os.walk(engine_dir):
-            if "llama-server.exe" in files:
-                server = os.path.join(r, "llama-server.exe"); break
-        if not server:
-            raise RuntimeError(f"ANDON: llama-server.exe not found under {engine_dir}")
-        # activate: per-instance shim + launch
-        shim = os.path.join(inst, "run.cmd")
-        cmd = [server, "-m", model, "-ngl", "99", "-fa", "--host", "127.0.0.1", "--port", str(port)]
-        with open(shim, "w", encoding="utf-8") as f: f.write(" ".join(f'"{c}"' for c in cmd) + "\n")
-        print(f"  [activate] launch {os.path.basename(server)} :{port}")
-        proc = subprocess.Popen(cmd, cwd=os.path.dirname(server),
-                                creationflags=getattr(subprocess, "CREATE_NEW_PROCESS_GROUP", 0))
+        _run_log(inst, f"[prepare] instance dir {inst}")
+
+        # materialize (provider)
+        engine_dir = provider.materialize(recipe, rig, inst, from_dir=from_dir, update=update)
+
+        # launch (provider) — record the stop compensator the moment we have a pid
+        proc, server = provider.launch(recipe, rig, inst, engine_dir, model=model, port=port, update=update)
         entry["pid"] = proc.pid; entry["port"] = port
         entry["compensators"].append({"kind": "stop", "pid": proc.pid, "port": port}); _ledger_put(iid, entry)
-        # probe health
-        ok = False
-        for _ in range(60):
-            try:
-                urllib.request.urlopen(f"http://127.0.0.1:{port}/health", timeout=2); ok = True; break
-            except Exception:
-                time.sleep(1)
-        if not ok:
-            raise RuntimeError("ANDON: server did not become healthy within 60s")
-        # measure (EXTERNAL_VERIFIER gate — PROVISION-A-005)
-        N_PREDICT = 256                                  # align probe length with the documented 256-tok probe
-        t0 = time.time()
-        req = urllib.request.Request(f"http://127.0.0.1:{port}/completion",
-                                     data=json.dumps({"prompt": "Count: 1 2 3", "n_predict": N_PREDICT}).encode(),
-                                     headers={"Content-Type": "application/json"})
-        resp = json.loads(urllib.request.urlopen(req, timeout=120).read())
-        dt = time.time() - t0
-        # VRAM ceiling: actually SAMPLE peak VRAM and HALT on a breach (the doc promised this but
-        # run() never measured it). Absence of evidence is not safety — if we can't sample, warn.
-        ceiling = rig.vram_gb
-        vram = _sample_vram_gb()
-        vverdict, vmsg = _vram_verdict(vram, ceiling)
-        if vverdict == "halt":
-            raise RuntimeError(f"ANDON: {vmsg}")
-        elif vverdict == "warn":
-            print(f"  [measure] WARNING: {vmsg}")
-        else:
-            print(f"  [measure] {vmsg}")
-        # token count: use the REAL tokens_predicted. Defaulting to 128 (the old code) fabricated a
-        # number and inflated tok/s; an absent count is a measurement error, not a free pass.
-        ntok = resp.get("tokens_predicted")
-        if ntok is None:
-            raise RuntimeError("ANDON: server response had no tokens_predicted — cannot measure tok/s")
-        if not dt:
-            raise RuntimeError("ANDON: zero elapsed time on the probe — cannot measure tok/s")
-        toks = ntok / dt
-        b = _select_baseline(recipe, model)
-        passed, verdict = _verdict(toks, b)
-        unit = (b.unit if b else recipe.axis) or "tok/s"
-        print(f"  [measure] {toks:.0f} {unit} over {dt:.1f}s ({ntok} tok)  -> {verdict}")
-        if not passed:
-            raise RuntimeError(f"ANDON: {toks:.0f} {unit} fails baseline ({verdict})")
-        entry["state"] = "ready"; entry["measured_tok_s"] = round(toks, 1)
-        if vram is not None:
-            entry["measured_vram_gb"] = vram
+        _run_log(inst, f"[activate] pid={proc.pid} :{port} ({os.path.basename(server)})")
+
+        # probe + measure (provider, EXTERNAL_VERIFIER gate)
+        result = provider.probe(recipe, rig, proc=proc, model=model, port=port, update=update,
+                                inst_dir=inst)
+
+        entry["state"] = "ready"; entry["measured_tok_s"] = result["tok_s"]
+        if result.get("vram_gb") is not None:
+            entry["measured_vram_gb"] = result["vram_gb"]
         _ledger_put(iid, entry)
+        _run_log(inst, f"[measure] READY {result['tok_s']} {result['unit']} "
+                       f"vram={result.get('vram_gb')} -> {result['verdict']}")
         print(f"\nREADY — {recipe.slug} on :{port} (instance {iid}). `er teardown {iid}` to roll back.")
     except Exception as ex:
         print(f"\nANDON HALT: {ex}")
+        _run_log(inst, f"[ANDON] {ex}")
         compensate(iid)
         raise SystemExit(2)

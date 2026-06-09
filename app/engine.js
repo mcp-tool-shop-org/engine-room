@@ -61,6 +61,17 @@ function setTimer(inst, fn, ms) { const t = setTimeout(fn, ms); inst._timers.pus
 const BUSY = new Set(['resolving','materializing','activating','producing','applying','bringing-up','measuring','tearing-down','rolling-back']);
 const TERMINAL_GOOD = { 'launchable-server':'ready', 'batch-producer':'done', 'modifier':'applied', 'router-fleet':'ready' };
 
+/* Fallback meta for a recipe_kind the panel has no handler for (a 5th kind the
+ * knowledge base grows that this build predates). Every consumer reads
+ * KIND_META through kindMeta() so an unknown kind renders a legible
+ * "unsupported kind" pane instead of crashing on `km.label` / `km.verb`. */
+const UNKNOWN_KIND_META = { label: 'unsupported', verb: 'Run', running: 'Stop', glyph: 'unknown', axisLabel: '—', unsupported: true };
+function kindMeta(recipe) {
+  const k = recipe && recipe.kind;
+  return (k && KIND_META[k]) || UNKNOWN_KIND_META;
+}
+function isSupportedKind(recipe) { return !!(recipe && KIND_META[recipe.kind]); }
+
 /* ============================================================================
  * PLANS — per recipe action, the ordered steps the simulation walks.
  * Each step: { label, cmd, dur, phase?, gate?, comp?, upstream?, progress? }
@@ -124,6 +135,9 @@ function runPlan(recipe) {
         { label: 'Awaiting upstream: ' + recipe.upstreams[1].name + ' (order 2)', cmd: 'wait http://:8000/health', dur: 1600, upstream: 1 },
       ],
     };
+    // A recipe_kind this build has no plan for: return null so SIM.run halts
+    // legibly instead of dereferencing `plan.phase` on undefined.
+    default: return null;
   }
 }
 
@@ -143,7 +157,7 @@ const SIM = {
     // and HEAD-requests every pinned artifact. Here it's a timed walk over the plan.
     this._walk(recipe, inst, inst.steps, 0, () => {
       inst.preflightOk = true; inst.state = 'preflight';
-      inst.phase = 'preflight passed — ready to ' + KIND_META[recipe.kind].verb.toLowerCase();
+      inst.phase = 'preflight passed — ready to ' + kindMeta(recipe).verb.toLowerCase();
       render();
     });
   },
@@ -154,6 +168,13 @@ const SIM = {
     if (!inst.preflightOk || BUSY.has(inst.state)) return;
     clearTimers(inst);
     const plan = runPlan(recipe);
+    // Unknown recipe_kind: no plan to walk. Don't crash — surface it.
+    if (!plan) {
+      inst.state = 'idle'; inst.phase = '';
+      toast('Unsupported recipe kind "' + (recipe.kind || '?') + '" — this build has no plan for it.', 'warn');
+      render();
+      return;
+    }
     inst.state = plan.phase; inst.andon = null;
     inst.steps = plan.steps.map(s => ({ ...s, status: 'pending' }));
     if (recipe.kind === 'router-fleet') {
@@ -190,6 +211,23 @@ const SIM = {
     inst.phase = step.label;
     render();
 
+    // SIDE EFFECT (materializeProgress): a determinate step (e.g. quantize) streams
+    // a 0..1 progress fraction. Here a timer simulates that stream so a long op reads
+    // as alive-and-advancing; the real WS replaces this with progress events.
+    if (step.progress) {
+      step._progress = step._progress || 0;
+      const tick = 200, ramp = Math.max(tick, step.dur);
+      inst._intervals = inst._intervals || [];
+      const pv = setInterval(() => {
+        if (step.status !== 'active') { clearInterval(pv); return; }
+        // approach but never reach 1 until the step actually completes
+        step._progress = Math.min(0.96, step._progress + tick / ramp);
+        render();
+      }, tick);
+      inst._intervals.push(pv);
+      step._progressIv = pv;
+    }
+
     // SIDE EFFECT: each step below is a real shell/recipe_step in the executor.
     setTimer(inst, () => {
       // resolvability ANDON (the unresolvable cu128 recipe)
@@ -202,20 +240,23 @@ const SIM = {
           recovery: { label: 'Re-resolve', event: 'reResolve' },
         });
       }
-      // defect-floor ANDON (vLLM WDDM hang below wsl2 2.7.0)
+      // defect-floor ANDON (e.g. vLLM WDDM hang below wsl2 2.7.0) — generic over
+      // whatever dep the recipe names, not hardcoded to WSL.
       if (step.check === 'defectFloor') {
-        const cur = draftFor(recipe)[recipe.defectFloor.dep] || draftFor(recipe).wsl;
-        if (cmpVer(cur, recipe.defectFloor.min) < 0) {
+        const floor = recipe.defectFloor;
+        const { cur } = defectFloorField(recipe);
+        if (cur != null && cmpVer(cur, floor.min) < 0) {
           step.status = 'fail';
           return this.andonHalt(recipe, inst, {
-            expected: `it to launch on WSL2 ${cur}`,
-            because: recipe.defectFloor.why,
-            pin: `${recipe.defectFloor.dep} ${cur}  <  required ${recipe.defectFloor.min}`,
-            recovery: { label: 'Set WSL2 ≥ 2.7.0 & retry', event: 'fixFloor' },
+            expected: `it to launch on ${floor.dep} ${cur}`,
+            because: floor.why,
+            pin: `${floor.dep} ${cur}  <  required ${floor.min}`,
+            recovery: { label: `Set ${floor.dep} ≥ ${floor.min} & retry`, event: 'fixFloor' },
           });
         }
       }
       step.status = 'ok';
+      if (step._progressIv) { clearInterval(step._progressIv); inst._intervals = (inst._intervals || []).filter(x => x !== step._progressIv); step._progressIv = null; step._progress = 1; }
       if (step.comp) {
         const comp = recipe.compensators.find(c => c.id === step.comp);
         if (comp && !inst.ledger.some(l => l.id === comp.id)) inst.ledger.push({ ...comp, doneAt: Date.now() });
@@ -311,8 +352,14 @@ const SIM = {
   },
 
   fixFloor(recipe) {
-    draftFor(recipe).wsl = '2.7.1';
-    toast('WSL2 set to 2.7.1 — retrying preflight', 'warn');
+    const floor = recipe.defectFloor;
+    if (!floor) { this.preflight(recipe); return; }
+    let { key } = defectFloorField(recipe);
+    // If no field drives the floor, write to the dep key so the retry clears it.
+    if (!key) key = floor.dep;
+    const target = defectFloorTargetVersion(recipe, key);
+    draftFor(recipe)[key] = target;
+    toast(`${floor.dep} set to ${target} — retrying preflight`, 'warn');
     this.preflight(recipe);
   },
 
@@ -331,6 +378,36 @@ const SIM = {
     inst.state = 'measuring'; inst.phase = 're-probing (cheap, 256-tok)';
     render();
     setTimer(inst, () => { inst.state = 'ready'; inst.phase = 'within 5% — baseline still valid'; inst.lineage = null; toast('Re-probe OK — perf within 5%'); render(); }, 1600);
+  },
+
+  // executor connection dropped: in-flight work can no longer be observed. Stop
+  // every busy instance's timers (gauges must NOT keep streaming under a
+  // read-only label) and move it to a 'disconnected' limbo with an honest notice.
+  goOffline() {
+    let stopped = 0;
+    for (const inst of Object.values(STATE.instances)) {
+      if (BUSY.has(inst.state)) {
+        clearTimers(inst);
+        inst._wasBusy = inst.state;          // remember what was running, for reconnect
+        inst.state = 'disconnected';
+        inst.phase = 'executor disconnected mid-flight — last reading frozen; outcome unknown';
+        inst.preflightOk = false;
+        stopped++;
+      }
+    }
+    if (stopped) toast(`Executor disconnected — ${stopped} in-flight run${stopped > 1 ? 's' : ''} frozen (no gauges stream offline).`, 'warn');
+  },
+  // executor reconnected: a frozen instance can't silently resume — it must be
+  // re-driven from a clean state. Reset disconnected instances to idle so the
+  // user re-preflights (the executor may have changed underneath us).
+  goOnline() {
+    for (const inst of Object.values(STATE.instances)) {
+      if (inst.state === 'disconnected') {
+        clearTimers(inst);
+        inst.state = 'idle'; inst.phase = ''; inst.telemetry = null; inst.steps = [];
+        inst.preflightOk = false; inst._wasBusy = null;
+      }
+    }
   },
 
   // stop / teardown: run compensators newest-first
@@ -397,6 +474,46 @@ function cmpVer(a, b) {
   for (let i = 0; i < Math.max(pa.length, pb.length); i++) {
     const x = pa[i] || 0, y = pb[i] || 0; if (x !== y) return x < y ? -1 : 1;
   } return 0;
+}
+
+/* Generic resolver for the draft field a defect floor governs. The floor's
+ * `dep` (e.g. "wsl2") may not equal the form's param key (e.g. "wsl"), so we
+ * match by key, then by an open-tier param whose options/value are version
+ * strings. Returns { key, cur } with key=null when no field drives the floor.
+ * Used by BOTH the preflight check and fixFloor, so the recovery is templated
+ * from defectFloor — never hardcoded to "wsl". */
+function defectFloorField(recipe) {
+  const floor = recipe.defectFloor;
+  if (!floor) return { key: null, cur: undefined };
+  const d = draftFor(recipe);
+  const isVer = v => /^\d+(\.\d+)+$/.test(String(v ?? ''));
+  // 1. exact draft key
+  if (d[floor.dep] != null) return { key: floor.dep, cur: d[floor.dep] };
+  // 2. a param whose key is a prefix/suffix of dep (wsl2 <-> wsl), versioned
+  const params = recipe.params || [];
+  const dep = String(floor.dep).toLowerCase();
+  const related = params.find(p => {
+    const k = String(p.key).toLowerCase();
+    return (dep.startsWith(k) || k.startsWith(dep)) && (isVer(d[p.key]) || (p.options || []).some(isVer));
+  });
+  if (related) return { key: related.key, cur: d[related.key] };
+  // 3. any open-tier versioned param (last resort)
+  const verParam = params.find(p => !p.locked && (isVer(d[p.key]) || (p.options || []).some(isVer)));
+  if (verParam) return { key: verParam.key, cur: d[verParam.key] };
+  return { key: null, cur: undefined };
+}
+/* Smallest offered version that clears the floor (so fixFloor sets a real,
+ * selectable value), else floor.min bumped to satisfy cmpVer. */
+function defectFloorTargetVersion(recipe, key) {
+  const floor = recipe.defectFloor;
+  const param = (recipe.params || []).find(p => p.key === key);
+  const opts = (param && param.options || []).filter(o => /^\d+(\.\d+)+$/.test(String(o)));
+  const clearing = opts.filter(o => cmpVer(o, floor.min) >= 0).sort(cmpVer);
+  if (clearing.length) return clearing[0];
+  // no offered option clears it — synthesize min's next patch (2.7.0 -> 2.7.1)
+  const parts = String(floor.min).split('.').map(Number);
+  parts[parts.length - 1] = (parts[parts.length - 1] || 0) + 1;
+  return parts.join('.');
 }
 
 /* constraint validation for the config form (changeParam guard)

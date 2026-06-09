@@ -36,8 +36,13 @@ def _parse_smi_query(line: str | None) -> dict | None:
 
     The GPU name can itself contain commas (e.g. "NVIDIA RTX 5000, Ada Generation"), so split
     from the RIGHT: the last two fields are always memory + driver; everything before is the name.
-    Returns gpu/vram_gb/driver, or None if the row isn't parseable (so the caller stays honest
-    instead of recording a blind fingerprint).
+    Returns gpu/vram_gb/driver, or None if the row's SHAPE is unparseable (so the caller stays
+    honest instead of recording a blind fingerprint).
+
+    Degrades PER-FIELD (BACKEND-B-003): a non-numeric memory.total (e.g. '[N/A]', which nvidia-smi
+    emits for some virtualized / MIG / older-driver paths) does NOT drop the whole row. We keep the
+    name + driver we DID read and set vram_gb=None — partial truth beats discarding a usable
+    fingerprint. Only an unparseable row SHAPE (wrong field count, blank line) returns None.
     """
     if not line or not line.strip():
         return None
@@ -48,7 +53,8 @@ def _parse_smi_query(line: str | None) -> dict | None:
     try:
         vram = round(float(mem) / 1024, 1)
     except ValueError:
-        return None
+        # memory.total was non-numeric ('[N/A]') — keep name+driver, degrade vram only.
+        vram = None
     return {"gpu": name, "vram_gb": vram, "driver": drv}
 
 
@@ -98,12 +104,26 @@ def _cuda_toolkit() -> str | None:
         return None
 
 
+# Architecture map: (lowercased name substring -> sm tag). Ordered, first hit wins. Moving the
+# mapping out of an if-ladder (BACKEND-B-005) makes adding a SKU a one-line table entry. The
+# desktop Blackwell (RTX 50-series, GB20x) family all reports compute capability sm_120 — the
+# 5090/5080 plus the 5070, 5070 Ti, and 5060 / 5060 Ti the original ladder omitted.
+_SM_TABLE: list[tuple[str, str]] = [
+    ("5090", "sm_120"),   # GB202
+    ("5080", "sm_120"),   # GB203
+    ("5070", "sm_120"),   # GB205 / GB203 (covers '5070' and '5070 ti' via substring)
+    ("5060", "sm_120"),   # GB206 (covers '5060' and '5060 ti')
+    ("blackwell", "sm_120"),
+]
+
+
 def _sm_for(gpu: str | None) -> str | None:
     if not gpu:
         return None
     g = gpu.lower()
-    if "5090" in g or "5080" in g or "blackwell" in g:
-        return "sm_120"          # desktop Blackwell GB202
+    for needle, sm in _SM_TABLE:
+        if needle in g:
+            return sm
     return None
 
 

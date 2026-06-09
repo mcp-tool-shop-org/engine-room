@@ -7,6 +7,14 @@
 const $ = (s, r = document) => r.querySelector(s);
 const esc = (s) => String(s).replace(/[&<>"]/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c]));
 let booting = true;
+let catalogError = false;   // set when the catalog GET fails (offline/read-only boot)
+
+/* any filter narrowing the catalog right now? drives the empty-state copy:
+ * "clear a filter" only makes sense when a filter is actually applied. */
+function filtersActive() {
+  const f = STATE.filters;
+  return !!(f.q.trim() || f.kind || f.verified || f.resolvable || f.commercial);
+}
 
 /* ---------- badges ---------- */
 function badge(cls, icon, label, tipTitle, tipMono) {
@@ -52,7 +60,7 @@ function filtered() {
 function card(r) {
   const inst = STATE.instances[r.id];
   const running = inst && inst.state !== 'idle';
-  const km = KIND_META[r.kind];
+  const km = kindMeta(r);
   const base = r.baselines[0];
   const lastDelta = r.deltas && r.deltas[r.deltas.length - 1];
   const baseTxt = r.kind === 'modifier'
@@ -76,6 +84,15 @@ function card(r) {
 }
 function renderCatalog() {
   const wrap = $('#catalog');
+  // load FAILED: the catalog GET never arrived — show an error + Retry, never a
+  // permanent skeleton. (realizes the brief's offline/read-only failure path)
+  if (catalogError) {
+    wrap.innerHTML = `<div class="empty-state empty-error" role="alert">${ICON.alert}
+      <div style="font-weight:600;color:var(--ink)">Couldn't load the catalog</div>
+      <div class="tiny">The recipe catalog request failed — the executor may be offline. Recipes, baselines, and trust signals all come from this GET.</div>
+      <button class="btn btn-cyan mt12" data-act="retry-catalog">${ICON.plug} Retry</button></div>`;
+    return;
+  }
   if (booting) {
     wrap.innerHTML = Array.from({ length: 4 }).map(() =>
       `<div class="card" aria-hidden="true"><div class="skeleton" style="height:14px;width:60%"></div><div class="skeleton" style="height:12px;width:90%"></div><div class="skeleton" style="height:22px;width:50%"></div></div>`).join('');
@@ -83,7 +100,15 @@ function renderCatalog() {
   }
   const list = filtered();
   if (!list.length) {
-    wrap.innerHTML = `<div class="empty-state">${ICON.empty}<div style="font-weight:600;color:var(--ink-dim)">No recipes match</div><div class="tiny">Clear a filter to widen the catalog.</div></div>`;
+    // distinguish "your filter hid everything" from "the catalog is genuinely empty"
+    if (filtersActive()) {
+      wrap.innerHTML = `<div class="empty-state">${ICON.empty}<div style="font-weight:600;color:var(--ink-dim)">No recipes match</div><div class="tiny">Clear a filter to widen the catalog.</div>
+        <button class="btn btn-ghost mt12" data-act="clear-filters">Clear all filters</button></div>`;
+    } else {
+      wrap.innerHTML = `<div class="empty-state empty-error" role="alert">${ICON.alert}<div style="font-weight:600;color:var(--ink)">No recipes available</div>
+        <div class="tiny">The catalog loaded but is empty — no recipes were returned. This is unusual; re-fetching may help.</div>
+        <button class="btn btn-cyan mt12" data-act="retry-catalog">${ICON.plug} Retry</button></div>`;
+    }
     return;
   }
   wrap.innerHTML = list.map(card).join('');
@@ -132,10 +157,15 @@ function serverGauges(r, inst) {
 /* ---------- steps ---------- */
 function stepsList(inst) {
   if (!inst.steps.length) return '';
-  return `<ul class="steps">${inst.steps.map(s => `<li class="step" data-st="${s.status}">
+  return `<ul class="steps">${inst.steps.map(s => {
+    // determinate progress for a progress:true step that is active (or completed)
+    const showBar = s.progress && (s.status === 'active' || (s.status === 'ok' && s._progress != null));
+    const pct = Math.round((s._progress || 0) * 100);
+    const bar = showBar ? `<div class="step-progress"><div class="meter"><div class="meter-fill" style="width:${pct}%"></div></div><span class="step-pct mono">${pct}%</span></div>` : '';
+    return `<li class="step" data-st="${s.status}">
     <span class="step-ico">${s.status === 'ok' ? ICON.check : s.status === 'fail' ? ICON.x : ''}</span>
-    <span class="step-body"><div class="step-label">${esc(s.label)}</div><div class="step-cmd mono">${esc(s.cmd)}</div></span>
-  </li>`).join('')}</ul>`;
+    <span class="step-body"><div class="step-label">${esc(s.label)}</div><div class="step-cmd mono">${esc(s.cmd)}</div>${bar}</span>
+  </li>`; }).join('')}</ul>`;
 }
 
 /* ---------- compensator ledger ---------- */
@@ -195,6 +225,12 @@ function configForm(r) {
 
 /* ---------- polymorphic "instrument" section per kind ---------- */
 function instrument(r, inst) {
+  // Unknown recipe_kind: no instrument exists for it. Say so plainly instead of
+  // rendering an empty section (the actionRow already disables the run button).
+  if (kindMeta(r).unsupported) {
+    return `<div class="section"><h3 class="section-h">Instrument</h3>
+      <div class="panel-box"><div class="tiny muted">No instrument for kind <span class="mono">${esc(r.kind || '?')}</span>. This Control Panel build measures launchable-server, batch-producer, modifier, and router-fleet recipes. Newer kinds need a panel update before they can be run or read here.</div></div></div>`;
+  }
   if (!inst) return '';
   const measuring = ['measuring'].includes(inst.state);
   const terminal = ['ready', 'done', 'applied', 'stale'].includes(inst.state);
@@ -233,12 +269,17 @@ function instrument(r, inst) {
 
 /* ---------- action row (polymorphic primary action) ---------- */
 function actionRow(r, inst) {
-  const km = KIND_META[r.kind];
+  const km = kindMeta(r);
   const st = inst ? inst.state : 'idle';
   const busy = BUSY.has(st);
   const offline = !STATE.online;
   const terminalGood = st === TERMINAL_GOOD[r.kind];
 
+  // A recipe_kind this build has no handler for: legible message, no dead button.
+  if (km.unsupported) {
+    return `<div class="action-row"><button class="btn" disabled>${esc(km.verb)}</button>
+      <span class="action-hint err">${ICON.alert} Unsupported kind <span class="mono">${esc(r.kind || '?')}</span> — this Control Panel build has no plan for it. Update engine-room to run it.</span></div>`;
+  }
   if (offline) {
     return `<div class="action-row"><button class="btn" disabled>${esc(km.verb)}</button>
       <span class="action-hint">${ICON.plug} Read-only — connect an executor to run. You can still browse, configure, and inspect.</span></div>`;
@@ -297,7 +338,7 @@ function renderDetail(animate) {
     return;
   }
   const inst = STATE.instances[r.id];
-  const km = KIND_META[r.kind];
+  const km = kindMeta(r);
   const contradiction = r.trust.verified && r.trust.resolvable === 'no';
   const teardownActive = inst && (inst.state === 'tearing-down' || inst.state === 'rolling-back');
 
@@ -312,6 +353,7 @@ function renderDetail(animate) {
       </div>
       <div class="dh-badges">${trustBadges(r)}</div>
       ${contradiction ? `<div class="lineage" style="background:var(--andon-dim);border-color:var(--andon);color:var(--ink)">${ICON.alert}<span>Verified <b>but won't resolve</b> — the claim is sound; the pinned artifact is gone. Re-resolve to use it.</span></div>` : ''}
+      ${inst && inst.state === 'disconnected' ? `<div class="conn-lost" role="status">${ICON.plug}<span><b>Connection lost.</b> The executor disconnected while this was ${esc((inst._wasBusy || 'running').replace(/-/g,' '))}. The last reading is frozen — no gauges stream offline, and the run's outcome can't be confirmed. Reconnect the executor to start clean.</span></div>` : ''}
       ${inst && inst.lineage ? `<div class="lineage">${ICON.check}<span>${esc(inst.lineage.from)}</span><span class="arrow">→</span><span>${esc(inst.lineage.to)}</span></div>` : ''}
 
       <div class="section"><h3 class="section-h">What this will do</h3>
@@ -437,9 +479,17 @@ document.addEventListener('click', (e) => {
     case 'stop-cancel': STATE.modal = null; renderModal(); break;
     case 'scrim': if (e.target === t) { if (STATE.modal?.onCancel) STATE.modal.onCancel(); else { STATE.modal = null; renderModal(); } } break;
     case 'toggle-theme': STATE.theme = STATE.theme === 'dark' ? 'light' : 'dark'; localStorage.setItem('er-theme', STATE.theme); renderChrome(); break;
-    case 'toggle-exec': STATE.online = !STATE.online; renderChrome(); renderDetail(false); break;
+    case 'toggle-exec':
+      STATE.online = !STATE.online;
+      // Going offline must HALT in-flight simulations (clear their timers/intervals)
+      // so gauges stop streaming; going online clears the frozen 'disconnected' limbo.
+      if (STATE.online) SIM.goOnline(); else SIM.goOffline();
+      render();
+      break;
     case 'filter-kind': STATE.filters.kind = STATE.filters.kind === t.dataset.filterKind ? null : t.dataset.filterKind; renderChrome(); renderCatalog(); break;
     case 'filter-flag': STATE.filters[t.dataset.filterFlag] = !STATE.filters[t.dataset.filterFlag]; renderChrome(); renderCatalog(); break;
+    case 'clear-filters': STATE.filters = { q: '', kind: null, verified: false, resolvable: false, commercial: false }; { const sb = $('#search'); if (sb) sb.value = ''; } renderChrome(); renderCatalog(); break;
+    case 'retry-catalog': loadCatalog(); break;
   }
 });
 
@@ -487,14 +537,42 @@ document.addEventListener('keydown', (e) => {
   }
 });
 
+/* ---------- catalog load (simulated GET /recipes) ---------- */
+// Faithful stand-in for the real catalog GET: resolves with the recipe list, or
+// REJECTS so the UI exercises its failure path. Replace with a real fetch().
+// Forced-failure hooks (for the failure path + the test harness):
+//   • ?catalogFail=1  in the URL
+//   • window.__ER_FORCE_CATALOG_FAIL === true
+function fetchCatalog() {
+  return new Promise((resolve, reject) => {
+    const forced = (typeof window !== 'undefined') &&
+      (window.__ER_FORCE_CATALOG_FAIL === true ||
+       (window.location && /[?&]catalogFail=1\b/.test(window.location.search || '')));
+    setTimeout(() => {
+      if (forced) reject(new Error('catalog GET failed (forced)'));
+      else resolve(RECIPES);
+    }, 650);
+  });
+}
+function loadCatalog() {
+  booting = true; catalogError = false;
+  renderCatalog();              // shows skeletons while booting
+  return fetchCatalog().then(() => {
+    booting = false; catalogError = false; renderCatalog();
+  }).catch(() => {
+    booting = false; catalogError = true; renderCatalog();
+    toast('Catalog failed to load — running read-only with no recipes.', 'warn');
+  });
+}
+
 /* ---------- boot ---------- */
 function boot() {
   STATE.theme = localStorage.getItem('er-theme') || 'dark';
   renderChrome();
-  renderCatalog();              // shows skeletons while booting
   renderDetail(false);
-  // simulate catalog load
-  setTimeout(() => { booting = false; renderCatalog(); }, 650);
+  loadCatalog();
 }
-if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
-else boot();
+if (typeof document !== 'undefined') {
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
+  else boot();
+}

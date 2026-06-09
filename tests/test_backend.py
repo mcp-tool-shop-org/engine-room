@@ -14,7 +14,7 @@ import unittest
 from tests._fixtures import build_min_db, fake_rig
 from executor import rig as rigmod
 from executor import resolve as resolvemod
-from executor.recipes import load_recipe
+from executor.recipes import Constraint, load_recipe
 
 
 def _check_for(result, needle):
@@ -245,6 +245,150 @@ class TestCudaToolkitPositiveRequirement(unittest.TestCase):
         self.assertIsNotNone(chk)
         self.assertEqual(chk.status, "halt", f"toolkit 13.0 contradicts 12.8 -> halt; got {chk.status}: {chk.detail}")
         self.assertFalse(res.ok, "resolve must not be ok when the toolkit requirement is contradicted")
+
+
+class TestUnmappedExprNote(unittest.TestCase):
+    """BACKEND-B-001 / B-002: a constraint whose expr the evaluator has NO handler for resolves
+    to the NEW status 'note' — legibly distinct from 'deferred' (a deliberate re-check) and from
+    'pass' (an affirmative verdict). Uses the 'unmapped-expr' fixture (requires_when
+    'torch_cuda==cu130', a shape no handler matches). Hermetic: built from the in-memory min DB,
+    NOT the live engines.db."""
+
+    def setUp(self):
+        self.tmp = os.path.join(tempfile.gettempdir(), "er_backend_b001.db")
+        build_min_db(self.tmp)
+        self.recipe = load_recipe("unmapped-expr", self.tmp)
+        self.assertIsNotNone(self.recipe, "unmapped-expr fixture recipe missing")
+
+    def test_unmapped_expr_resolves_to_note(self):
+        """INVARIANT: requires_when 'torch_cuda==cu130' (no evaluator handler) -> status 'note',
+        NOT 'deferred' and NOT 'pass'. 'note' is the legible 'this executor has no rule' signal."""
+        rig = fake_rig()
+        res = resolvemod.resolve(self.recipe, rig)
+        chk = _check_for(res, "torch_cuda==cu130")
+        self.assertIsNotNone(chk, "the unmapped requires_when constraint check did not run")
+        self.assertEqual(chk.status, "note",
+                         f"unmapped expr must be 'note'; got {chk.status}: {chk.detail}")
+        self.assertNotEqual(chk.status, "deferred", "an unmapped expr must NOT masquerade as a deferred re-check")
+        self.assertNotEqual(chk.status, "pass", "an unmapped expr must NOT silently pass")
+
+    def test_note_is_non_blocking(self):
+        """INVARIANT: 'note' is non-blocking — an unmapped constraint must NOT halt provision
+        (it is not in res.halts and res.ok stays True). Avoids false-halting KB rows the
+        executor simply has no rule for yet."""
+        res = resolvemod.resolve(self.recipe, fake_rig())
+        chk = _check_for(res, "torch_cuda==cu130")
+        self.assertEqual(chk.status, "note")
+        self.assertNotIn(chk, res.halts, "'note' must never appear in res.halts")
+        self.assertTrue(res.ok, "a note-only preflight has no halts — resolve should stay ok")
+
+
+class TestConstraintDispatchTable(unittest.TestCase):
+    """BACKEND-B-002: the constraint evaluator is a dispatch registry (matcher -> handler), and
+    the terminal fall-through splits 'deferred' (deliberate punt) from 'note' (no handler).
+
+    These pin the BEHAVIOR of the refactor against synthetic Constraint objects (no DB) so the
+    full status set (pass/halt/warn/deferred/note) is locked at the seam, not just one path."""
+
+    def test_abi_equal_stays_deferred_not_note(self):
+        """INVARIANT: abi_equal is a DELIBERATE re-check-at-materialize -> 'deferred', NOT 'note'.
+        The split must keep this distinct from the no-handler case."""
+        c = Constraint(ctype="abi_equal", expr="abi(a)==abi(b)", reason=None)
+        chk = resolvemod._eval_constraint(c, fake_rig())
+        self.assertEqual(chk.status, "deferred",
+                         f"abi_equal is a deliberate punt -> deferred; got {chk.status}")
+
+    def test_unknown_conflicts_when_fallthrough_is_note_not_halt(self):
+        """INVARIANT: a conflicts_when expr with NO matching handler falls through to 'note',
+        NOT escalated to warn/halt — escalating would false-halt the ~29 KB conflict rows the
+        evaluator does not model. 'note' is the legible signal instead."""
+        c = Constraint(ctype="conflicts_when", expr="rocm>=6.0", reason="AMD path not modeled")
+        chk = resolvemod._eval_constraint(c, fake_rig())
+        self.assertEqual(chk.status, "note",
+                         f"unmodeled conflicts_when must be 'note', not a false halt; got {chk.status}")
+        self.assertNotEqual(chk.status, "halt", "an unmodeled conflicts_when must NOT false-halt")
+
+    def test_registered_handler_still_dispatches(self):
+        """INVARIANT (no regression): a registered shape still routes to its handler. The
+        gpu_arch capability on an sm_120 rig with an sm_120 floor -> 'pass' (handler ran),
+        proving the table dispatches, not just the fall-through."""
+        c = Constraint(ctype="capability", expr="gpu_arch>=sm_120", reason=None)
+        chk = resolvemod._eval_constraint(c, fake_rig(sm="sm_120"))
+        self.assertEqual(chk.status, "pass",
+                         f"registered gpu_arch handler should dispatch -> pass; got {chk.status}: {chk.detail}")
+
+    def test_new_handler_is_one_line_registration(self):
+        """INVARIANT (extensibility): the registry is the single extension point. Registering a
+        matcher->handler pair makes a previously-unmapped expr resolve via the new handler instead
+        of falling through to 'note'. We append, exercise, then restore so the suite stays clean."""
+        c = Constraint(ctype="requires_when", expr="torch_cuda==cu130", reason=None)
+        # before registration: falls through to 'note'
+        self.assertEqual(resolvemod._eval_constraint(c, fake_rig()).status, "note")
+        sentinel = lambda cc, rig: resolvemod.Check(cc.expr, "pass", "handled by test handler")
+        resolvemod._HANDLERS.append((lambda cc: "torch_cuda==cu130" in cc.expr, sentinel))
+        try:
+            chk = resolvemod._eval_constraint(c, fake_rig())
+            self.assertEqual(chk.status, "pass", "the one-line registration should now handle the expr")
+            self.assertEqual(chk.detail, "handled by test handler")
+        finally:
+            resolvemod._HANDLERS.pop()  # restore the registry for the rest of the suite
+
+
+class TestSmiPerFieldDegrade(unittest.TestCase):
+    """BACKEND-B-003: _parse_smi_query degrades PER FIELD — a non-numeric memory.total keeps
+    name + driver and sets vram_gb=None, instead of dropping the whole row to None."""
+
+    def test_na_memory_keeps_name_and_driver(self):
+        """INVARIANT: 'NVIDIA X, [N/A], 580.00' -> name+driver retained, vram_gb=None (NOT a
+        whole-row None that would blank the fingerprint)."""
+        parsed = rigmod._parse_smi_query("NVIDIA X, [N/A], 580.00")
+        self.assertIsNotNone(parsed, "[N/A] memory must NOT drop the whole row to None")
+        self.assertEqual(parsed["gpu"], "NVIDIA X")
+        self.assertEqual(parsed["driver"], "580.00")
+        self.assertIsNone(parsed["vram_gb"], "non-numeric memory.total -> vram_gb None")
+
+    def test_na_memory_with_comma_name_still_degrades_per_field(self):
+        """INVARIANT: per-field degrade composes with the comma-in-name rsplit — the name is
+        still the everything-before-the-last-two-fields, driver intact, vram None."""
+        parsed = rigmod._parse_smi_query("NVIDIA RTX 5000, Ada Generation, [N/A], 580.00")
+        self.assertIsNotNone(parsed)
+        self.assertEqual(parsed["gpu"], "NVIDIA RTX 5000, Ada Generation")
+        self.assertEqual(parsed["driver"], "580.00")
+        self.assertIsNone(parsed["vram_gb"])
+
+    def test_numeric_memory_still_yields_vram(self):
+        """INVARIANT (no regression): a numeric memory still produces a real vram_gb."""
+        parsed = rigmod._parse_smi_query("NVIDIA X, 32760, 580.00")
+        self.assertEqual(parsed["vram_gb"], round(32760 / 1024, 1))
+
+    def test_wrong_field_count_still_none(self):
+        """INVARIANT: an unparseable row SHAPE (too few fields) is still None — only the memory
+        FIELD degrades, not the row structure."""
+        self.assertIsNone(rigmod._parse_smi_query("just-a-name"))
+
+
+class TestSmTableBlackwellSkus(unittest.TestCase):
+    """BACKEND-B-005: the sm mapping is a data table and covers the full sm_120 Blackwell
+    desktop family (5090/5080 plus the 5070, 5070 Ti, 5060 family the original ladder omitted)."""
+
+    def test_5070_is_sm_120(self):
+        """INVARIANT: 'NVIDIA GeForce RTX 5070' -> 'sm_120' (was unmapped -> None before)."""
+        self.assertEqual(rigmod._sm_for("NVIDIA GeForce RTX 5070"), "sm_120")
+
+    def test_5070_ti_and_5060_family_are_sm_120(self):
+        for name in ("NVIDIA GeForce RTX 5070 Ti", "NVIDIA GeForce RTX 5060",
+                     "NVIDIA GeForce RTX 5060 Ti"):
+            self.assertEqual(rigmod._sm_for(name), "sm_120", f"{name} should map to sm_120")
+
+    def test_existing_5090_5080_still_sm_120(self):
+        """INVARIANT (no regression): the original SKUs still resolve via the table."""
+        self.assertEqual(rigmod._sm_for("NVIDIA GeForce RTX 5090"), "sm_120")
+        self.assertEqual(rigmod._sm_for("NVIDIA GeForce RTX 5080"), "sm_120")
+
+    def test_unknown_gpu_still_none(self):
+        """INVARIANT: a non-Blackwell name is still None (the table didn't over-match)."""
+        self.assertIsNone(rigmod._sm_for("NVIDIA GeForce RTX 4090"))
+        self.assertIsNone(rigmod._sm_for(None))
 
 
 if __name__ == "__main__":
