@@ -1,5 +1,16 @@
 # Security Policy
 
+## Supported versions
+
+engine-room is actively maintained. Security fixes land on the **latest minor**
+(currently the **1.0.x** line); older minors are not back-patched. Report
+vulnerabilities via GitHub private advisories (see [Reporting a vulnerability](#reporting-a-vulnerability)).
+
+| Version | Supported |
+|---------|-----------|
+| 1.0.x   | yes       |
+| < 1.0   | no        |
+
 ## Trust boundary
 
 engine-room is an **executor** over a verified recipe layer. Two things sit on either side of

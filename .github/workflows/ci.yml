@@ -1,0 +1,58 @@
+name: CI
+
+on:
+  push:
+    paths:
+      - "pyproject.toml"
+      - "executor/**"
+      - "tests/**"
+      - ".github/workflows/**"
+  pull_request:
+    paths:
+      - "pyproject.toml"
+      - "executor/**"
+      - "tests/**"
+      - ".github/workflows/**"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Run the stdlib test suite
+        run: python -m unittest discover -s tests -v
+
+      - name: Dependency scan — assert the stdlib-only invariant (zero third-party deps)
+        run: |
+          python - <<'PY'
+          import sys, tomllib
+          with open("pyproject.toml", "rb") as f:
+              data = tomllib.load(f)
+          deps = data.get("project", {}).get("dependencies", [])
+          if deps:
+              print(f"FAIL: engine-room core is stdlib-only by design, but "
+                    f"[project].dependencies is non-empty: {deps}", file=sys.stderr)
+              sys.exit(1)
+          print("ok: [project].dependencies is empty — stdlib-only invariant holds")
+          PY
+
+      - name: Build wheel + sdist
+        run: pipx run build
+
+      - name: Show built artifacts
+        run: ls -l dist/

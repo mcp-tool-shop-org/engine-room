@@ -103,6 +103,12 @@ explicit `--execute` and `--model`** — every other command, and `provision` wi
 Every irreversible step is recorded on a ledger *before* it runs and has a named, newest-first
 compensator. To report a vulnerability, see [`SECURITY.md`](SECURITY.md).
 
+## Support
+
+engine-room is **actively maintained**. Security fixes land on the **latest minor** (the 1.0.x
+line); see [`SECURITY.md`](SECURITY.md) for supported versions and the private-advisory reporting
+path. File bugs and feature requests as GitHub issues.
+
 ## License
 
 MIT — see [LICENSE](LICENSE).
