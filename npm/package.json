@@ -1,0 +1,25 @@
+{
+  "name": "@mcptoolshop/engine-room",
+  "version": "1.0.0",
+  "description": "Recipe-driven provisioner for local AI engines — the er CLI. npx discovery wrapper for the stdlib-only Python tool.",
+  "type": "module",
+  "bin": {
+    "engine-room": "bin/engine-room.mjs"
+  },
+  "files": ["bin", "README.md"],
+  "keywords": ["local-ai", "llm", "gpu", "provisioner", "cli", "llama-cpp", "recipe", "executor", "blackwell"],
+  "license": "MIT",
+  "author": "mcp-tool-shop <64996768+mcp-tool-shop@users.noreply.github.com>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mcp-tool-shop-org/engine-room.git",
+    "directory": "npm"
+  },
+  "homepage": "https://mcp-tool-shop-org.github.io/engine-room/",
+  "bugs": {
+    "url": "https://github.com/mcp-tool-shop-org/engine-room/issues"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
