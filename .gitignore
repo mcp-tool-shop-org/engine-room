@@ -12,3 +12,6 @@ Thumbs.db
 
 # headless render scratch
 _*.png
+
+# screenshot capture scratch
+app/screenshots/_gallery/

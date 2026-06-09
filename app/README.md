@@ -22,8 +22,10 @@ rollback. Pure front-end — **open it in a browser, no server needed.**
 | `styles.css` | navy-ink + deep-blue instrument-panel theme; status colors (green go / amber gate / red halt); light theme |
 | `logo.png` | brand asset |
 
-The standalone in `dist/` is **bundled from these sources** — edit the source files and
-re-bundle; don't hand-edit the compiled file.
+The standalone in `dist/control-panel.html` is **built from these sources** — edit the source
+files, then `node build.mjs` (zero-dep: inlines the CSS + JS into one offline file). Don't
+hand-edit the compiled file. Refresh the [state gallery](screenshots/) with
+`node screenshots/capture.mjs` (drives the page over CDP with the system Chrome — no install).
 
 ## Wiring to the real executor (handoff)
 

@@ -57,7 +57,7 @@ function filtered() {
     return true;
   });
 }
-function card(r) {
+function card(r, tabStopId) {
   const inst = STATE.instances[r.id];
   const running = inst && inst.state !== 'idle';
   const km = kindMeta(r);
@@ -68,7 +68,12 @@ function card(r) {
     : r.kind === 'router-fleet'
       ? `${(r.upstreams || []).length} upstreams`
       : base ? `${base.value} <b>${base.unit}</b>` : '';
-  return `<button class="card needs-exec-soft" role="option" aria-selected="${STATE.selectedId === r.id}" data-running="${!!running}" data-act="select" data-id="${r.id}">
+  const selected = STATE.selectedId === r.id;
+  // Roving tabindex: exactly ONE option is a tab stop (tabStopId — the selected
+  // option, else the first VISIBLE card). Tab lands on the catalog once, then
+  // arrows move selection + real focus. The listbox container is NOT a tab stop.
+  const rovingTab = r.id === tabStopId ? '0' : '-1';
+  return `<button class="card needs-exec-soft" role="option" aria-selected="${selected}" tabindex="${rovingTab}" data-running="${!!running}" data-act="select" data-id="${r.id}">
     <div class="card-top">
       <span class="kind-tag" data-kind="${r.kind}">${km.label}</span>
       <span class="card-name">${esc(r.name)}</span>
@@ -111,7 +116,11 @@ function renderCatalog() {
     }
     return;
   }
-  wrap.innerHTML = list.map(card).join('');
+  // the single roving tab stop: the selected option if it's visible, else the
+  // first visible card. Guarantees exactly one tabindex=0 option in the listbox.
+  const selectedVisible = list.some(r => r.id === STATE.selectedId);
+  const tabStopId = selectedVisible ? STATE.selectedId : list[0].id;
+  wrap.innerHTML = list.map(r => card(r, tabStopId)).join('');
 }
 
 /* ---------- gauges ---------- */

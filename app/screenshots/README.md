@@ -1,40 +1,19 @@
 # Control Panel — state gallery
 
-Captured from the live prototype (`../dist/control-panel.html`), driven headless. Every state
-below is real UI, not a mockup — the panel was clicked through to each one.
+Real UI, not mockups — every PNG is the live prototype (`../dist/control-panel.html`) driven
+through one of its states and screenshotted. **Regenerate with `node capture.mjs`** (zero-dep:
+drives the page over CDP with the system Chrome, no install). Rebuild the standalone first with
+`node ../build.mjs` if you've edited a source file.
 
-### Catalog (default)
-The home: rig strip, search + kind/trust filters, and the six recipes with kind + trust badges.
-![catalog](01-catalog.png)
-
-### launchable-server — running, with live telemetry
-llama.cpp launched → materialized → measuring. Model-keyed baselines, progress steps, the live
-tok/s sparkline + VRAM-vs-ceiling gauge, the compensator ledger, and vendored pins.
-![server ready](02-server-ready.png)
-
-### batch-producer
-GGUF quantize: no port, axis is bits/weight, a `file-hash + perplexity` golden, and an **output
-artifact** path. Terminates after writing the file.
-![producer](03-producer.png)
-
-### modifier
-SageAttention: no port, no self-baseline — an "Apply to [target]" overlay measured as a **delta**
-against the recipe it patches, with a hard-crash conflict guard and an "Unpatch" compensator.
-![modifier](04-modifier.png)
-
-### router-fleet
-LiteLLM proxy: fronts other recipes, refcounted-stop compensator, upstreams owned by their own
-instances.
-![router](05-router.png)
-
-### Human gate (machine-global op)
-Launching vLLM pauses at `wsl --update` — a **blast-radius** modal naming the machine-wide kernel
-change, the HUMAN-GATED compensator, and its honest post-state. Nothing irreversible runs without
-"Approve — I own this."
-![human gate](06-human-gate.png)
-
-### ANDON halt + recovery
-The cu128 recipe flags the **verified-but-won't-resolve** contradiction (its pinned wheel 404s),
-and a launch attempt stops the line with a contrastive cause and a one-click **Re-resolve**
-(cu128 → cu130 lineage).
-![andon halt](07-andon-halt.png)
+| State | What it shows |
+|-------|---------------|
+| [Catalog (dark)](01-catalog-dark.png) | The home: rig strip, search + kind/trust filters, the recipes with kind + trust badges. |
+| [Catalog (light)](02-catalog-light.png) | The light-theme toggle — a real conversion (AA-contrast tokens), not a tint. |
+| [Offline / read-only](03-offline-readonly.png) | No executor connected → the panel degrades to a recipe **browser**: a read-only banner, everything visible, running disabled. |
+| [launchable-server](04-detail-server.png) | llama.cpp + llama-swap: model-keyed baselines, "what this will do", a port, Preflight/Launch, the compensator ledger + vendored pins. |
+| [Server running](05-server-running.png) | Materialize → measure with a determinate step bar; the live tok/s + VRAM-vs-ceiling instruments. |
+| [batch-producer](06-detail-producer.png) | GGUF quantize: no port, axis is bits/weight, a `file-hash + perplexity` golden, and an output artifact path. Terminates after writing the file. |
+| [modifier](07-detail-modifier.png) | SageAttention: no port, no self-baseline — an "Apply to [target]" overlay measured as a **delta**, with a hard-crash conflict guard and an "Unpatch" compensator. |
+| [router-fleet](08-detail-router.png) | LiteLLM proxy: fronts other recipes, per-upstream health, a refcounted-stop compensator. |
+| [ANDON halt](09-andon-halt.png) | The cu128 recipe surfaces the **verified-but-won't-resolve** contradiction (its pinned wheel is gone) with a contrastive cause and a one-click **Re-resolve**. |
+| [Empty filter](10-empty-search.png) | A filter that matches nothing → a distinct "no recipes match" state with **Clear all filters** (vs. an empty catalog or a failed fetch, which get their own states). |
