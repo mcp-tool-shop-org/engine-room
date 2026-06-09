@@ -15,3 +15,7 @@ _*.png
 
 # screenshot capture scratch
 app/screenshots/_gallery/
+site/.astro/
+site/dist/
+site/node_modules/
+.polyglot-cache.json
