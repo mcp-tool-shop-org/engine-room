@@ -40,21 +40,57 @@ def _ver(s: str | None):
     return tuple(int(x) for x in m) if m else None
 
 
+def _sm_num(s: str | None) -> int | None:
+    """Numeric part of an sm_NNN string (sm_120 -> 120). None if not an sm_ token."""
+    if not s:
+        return None
+    m = re.search(r"sm_?(\d+)", s)
+    return int(m.group(1)) if m else None
+
+
 def _eval_constraint(c, rig: Rig) -> Check:
     e = c.expr
     if c.ctype == "capability" and "gpu_arch" in e:
-        ok = rig.sm == "sm_120"
-        return Check(e, "pass" if ok else "warn", f"rig sm={rig.sm}")
+        # honor the sm_NNN threshold + comparator in the expr — don't hardcode sm_120
+        floor = _sm_num(e)
+        have = _sm_num(rig.sm)
+        if floor is None:
+            return Check(e, "warn", f"unparseable gpu_arch expr; rig sm={rig.sm}")
+        if have is None:
+            # ANDON: unknown rig arch can't clear an arch floor (absence of evidence != safety)
+            return Check(e, "warn", f"rig sm unknown — can't confirm gpu_arch{'>=' if '>=' in e else ''}sm_{floor}")
+        if ">=" in e:
+            ok = have >= floor
+        elif ">" in e:
+            ok = have > floor
+        elif "==" in e:
+            ok = have == floor
+        else:
+            ok = have == floor
+        return Check(e, "pass" if ok else "warn", f"rig sm={rig.sm} vs floor sm_{floor}")
     if "cuda_toolkit==12.8" in e:
         if rig.cuda_toolkit is None:
             return Check(e, "warn", "no nvcc on PATH — can't confirm toolkit 12.8 (wheels may bundle it)")
         return Check(e, "pass" if rig.cuda_toolkit.startswith("12.8") else "halt", f"toolkit={rig.cuda_toolkit}")
     if c.ctype == "conflicts_when" and "cuda_toolkit>=13" in e:
+        # the live rig has no nvcc (toolkit None) but DOES run CUDA UMD 13.x — evaluate the
+        # conflict against BOTH fields, taking whichever is present / the max.
         tk = _ver(rig.cuda_toolkit)
-        return Check(e, "halt" if (tk and tk >= (13, 0)) else "pass", f"toolkit={rig.cuda_toolkit}")
+        rt = _ver(rig.cuda_runtime)
+        present = [v for v in (tk, rt) if v is not None]
+        if not present:
+            # ANDON: neither field known — can't clear a conflict; absence of evidence != safety
+            return Check(e, "halt", "no cuda_toolkit/cuda_runtime detected — can't rule out the 13.x conflict")
+        worst = max(present)
+        hit = worst >= (13, 0)
+        return Check(e, "halt" if hit else "pass",
+                     f"toolkit={rig.cuda_toolkit} runtime={rig.cuda_runtime}")
     if c.ctype == "defect_floor" and "wsl2>=2.7" in e:
         wv = _ver(rig.wsl2_version)
         if wv is None:
+            # unknown wsl2 -> warn (not halt): an absent WSL pathway means the wsl2 defect can't
+            # apply, whereas an unknown cuda runtime under conflicts_when -> halt because a live
+            # runtime is definitely present and we cannot rule the conflict out.
             return Check(e, "warn", "WSL2 not detected")
         return Check(e, "pass" if wv >= (2, 7, 0) else "halt", f"wsl2={rig.wsl2_version}")
     if "gradient_checkpointing" in e:

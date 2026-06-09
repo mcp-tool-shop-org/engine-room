@@ -54,10 +54,11 @@ function card(r) {
   const running = inst && inst.state !== 'idle';
   const km = KIND_META[r.kind];
   const base = r.baselines[0];
+  const lastDelta = r.deltas && r.deltas[r.deltas.length - 1];
   const baseTxt = r.kind === 'modifier'
-    ? `Δ +${r.deltas[r.deltas.length - 1].pct}% @ ${r.deltas[r.deltas.length - 1].at}`
+    ? (lastDelta ? `Δ +${lastDelta.pct}% @ ${lastDelta.at}` : 'no delta yet')
     : r.kind === 'router-fleet'
-      ? `${r.upstreams.length} upstreams`
+      ? `${(r.upstreams || []).length} upstreams`
       : base ? `${base.value} <b>${base.unit}</b>` : '';
   return `<button class="card needs-exec-soft" role="option" aria-selected="${STATE.selectedId === r.id}" data-running="${!!running}" data-act="select" data-id="${r.id}">
     <div class="card-top">
@@ -217,7 +218,7 @@ function instrument(r, inst) {
     const written = inst.state === 'done';
     return `<div class="section"><h3 class="section-h">Producer output</h3>
       <div class="gauges" style="margin-bottom:14px">
-        <div class="gauge ok"><div class="gauge-h"><span class="gauge-k">bits / weight</span><span class="tiny mono muted">target ≤ ${t.bpwCeil || 4.6}</span></div><div class="gauge-v mono">${(t.bpw || r.baselines[0].value)}<span class="unit">bpw</span></div><div class="meter mt12"><div class="meter-fill" style="width:${((t.bpw||4.52)/(t.bpwCeil||4.6))*100}%"></div><div class="meter-tick" data-label="ceil" style="left:100%"></div></div></div>
+        <div class="gauge ok"><div class="gauge-h"><span class="gauge-k">bits / weight</span><span class="tiny mono muted">target ≤ ${t.bpwCeil || 4.6}</span></div><div class="gauge-v mono">${(t.bpw ?? r.baselines[0]?.value ?? '—')}<span class="unit">bpw</span></div><div class="meter mt12"><div class="meter-fill" style="width:${((t.bpw||4.52)/(t.bpwCeil||4.6))*100}%"></div><div class="meter-tick" data-label="ceil" style="left:100%"></div></div></div>
         <div class="gauge"><div class="gauge-h"><span class="gauge-k">build wall-clock</span></div><div class="gauge-v mono">${wall}<span class="unit">s</span></div><div class="gauge-sub mt12"><span>golden: ${esc(r.golden.kind)}</span><span>${written ? 'PASS' : '—'}</span></div></div>
       </div>
       <div class="outfile ${written ? 'written' : ''}">${written ? ICON.check : ICON.dash}<span class="mono">${esc(r.outputPath)}</span>${written ? `<span class="hash mono">${esc(inst.fileHash || '')}</span>` : '<span class="hash">not written yet</span>'}</div>
@@ -265,6 +266,18 @@ function actionRow(r, inst) {
     <button class="btn btn-primary needs-exec" data-act="run" data-id="${r.id}" ${canRun ? '' : 'disabled'}>${esc(km.verb)}${r.kind === 'modifier' ? ' to ' + esc(draftFor(r).target) : r.port ? ' :' + draftFor(r).port : ''}</button>
     <span class="action-hint ${!val.ok ? 'err' : ''}">${!val.ok ? ICON.alert + ' ' + esc(val.why) : pfOk ? 'Preflight passed — clear to ' + km.verb.toLowerCase() + '.' : 'Run preflight to resolve the lock and probe artifacts before any long work.'}</span>
   </div>`;
+}
+// Surgically refresh ONLY the polymorphic action row (validity + run button +
+// hint) in place, so a free-text param input the user is mid-keystroke in is
+// never destroyed — keeps native focus + caret. Used by the changeParam handler.
+function updateActionRow(r, inst) {
+  const old = $('#detail .action-row');
+  if (!old) return false;
+  const tmp = document.createElement('template');
+  tmp.innerHTML = actionRow(r, inst).trim();
+  const next = tmp.content.firstElementChild;
+  if (next) { old.replaceWith(next); return true; }
+  return false;
 }
 function stateHint(r, inst) {
   if (inst.state === 'ready') return r.kind === 'router-fleet' ? 'Router up — all required upstreams healthy.' : 'Serving on :' + r.port + ' (pid ' + inst.pid + ') — baseline passed.';
@@ -435,10 +448,17 @@ document.addEventListener('input', (e) => {
   const t = e.target.closest('[data-act="param"]'); if (!t) return;
   const r = recipeById(t.dataset.id); const d = draftFor(r);
   d[t.dataset.key] = t.value;
-  // re-validate + re-enable run without losing focus: just update the action row + hint
+  // re-validate + re-enable run WITHOUT destroying the input the user is typing in:
+  // surgically swap only the action row instead of rebuilding col.innerHTML.
   const inst = STATE.instances[r.id];
   if (inst) inst.preflightOk = false;     // changing config invalidates preflight
-  renderDetail(false);
+  if (!updateActionRow(r, inst)) {
+    // fallback: full re-render, then restore focus + caret like the SEARCH handler
+    const key = t.dataset.key, selStart = t.selectionStart, selEnd = t.selectionEnd;
+    renderDetail(false);
+    const re = document.querySelector(`[data-act="param"][data-id="${r.id}"][data-key="${key}"]`);
+    if (re) { re.focus(); try { re.setSelectionRange(selStart, selEnd); } catch (_) {} }
+  }
 });
 document.addEventListener('input', (e) => {
   const s = e.target.closest('#search'); if (!s) return;

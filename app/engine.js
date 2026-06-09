@@ -244,7 +244,7 @@ const SIM = {
       return;
     }
     if (recipe.kind === 'batch-producer') {
-      inst.telemetry = { bpw: recipe.baselines[0].value, bpwCeil: 4.6, wall: inst.wallClock };
+      inst.telemetry = { bpw: recipe.baselines[0]?.value ?? null, bpwCeil: 4.6, wall: inst.wallClock };
       inst.phase = 'golden gate: file-hash + perplexity';
       render();
       setTimer(inst, () => this.goldenResult(recipe, inst, true), 1300);
@@ -383,7 +383,14 @@ const SIM = {
 /* ---- small utils ---- */
 function activeBaseline(recipe) {
   const d = draftFor(recipe);
-  return recipe.baselines.find(b => b.model.startsWith(d.model)) || recipe.baselines[0];
+  const list = recipe.baselines || [];
+  // empty baselines is contract-valid (modifier/router) — fall back to a neutral
+  // readout instead of crashing the live-telemetry gauges on `baseline.value`.
+  // null-safe: a baseline may be model-INDEPENDENT (model===null/undefined) — the
+  // data contract + the Python _select_baseline both permit NULL-model baselines,
+  // so guard both sides of startsWith instead of throwing on b.model.
+  return list.find(b => (b.model || '').startsWith(d.model || '')) || list[0]
+    || { model: '—', value: 0, unit: recipe.axis === 'tok_s' ? 'tok/s' : '', bound: 'lower' };
 }
 function cmpVer(a, b) {
   const pa = String(a).split('.').map(Number), pb = String(b).split('.').map(Number);
@@ -392,12 +399,31 @@ function cmpVer(a, b) {
   } return 0;
 }
 
-/* constraint validation for the config form (changeParam guard) */
+/* constraint validation for the config form (changeParam guard)
+ * Guards key off the ACTUAL field keys the form emits (model/port/ctx/flash/
+ * conc/wsl/src/quant/calib/target/res) and live recipe/rig data — never a
+ * phantom key the form never produces (that would fail-open). */
 function validateDraft(recipe) {
   const d = draftFor(recipe);
-  // example hard constraint: cuda 13.x conflicts with the pinned 12.8 toolchain
-  if (d.cuda && /^13\./.test(String(d.cuda))) return { ok: false, why: 'CUDA 13.x conflicts with the pinned 12.8 toolchain.' };
-  if (recipe.kind === 'modifier' && recipe.conflictsWhen && d.targetBackend === 'fp16_cuda')
-    return { ok: false, why: 'Conflicts: target on fp16_cuda hard-crashes with this overlay.' };
+  // hard constraint: a recipe pinned to a 12.x / cu12x toolchain conflicts with a
+  // cuda-13 rig. Derive the cuda version from real data — the recipe's pinned
+  // compat band vs the live RIG cuda — not a non-existent form field.
+  const rigCuda = String(RIG.cuda || '');
+  const pinnedCuda = String(recipe.compat && recipe.compat.cuda || '');
+  if (/^13\./.test(rigCuda) && /(?:^|\D)12\.|cu12/i.test(pinnedCuda))
+    return { ok: false, why: `CUDA ${rigCuda} (rig) conflicts with this recipe's pinned ${pinnedCuda} toolchain.` };
+  // modifier conflict: conflictsWhen names the target's BACKEND that hard-crashes
+  // the overlay (e.g. "target backend == fp16_cuda ..."). d.target is the 'Apply
+  // to' field — a TARGET RECIPE ID, not a backend token — so comparing d.target to
+  // the backend token can never match (dead guard). Resolve d.target to its recipe
+  // and compare ITS backend field against the conflict token, so the guard fires
+  // when the applied-to recipe's backend is the conflicting one.
+  if (recipe.kind === 'modifier' && recipe.conflictsWhen) {
+    const m = recipe.conflictsWhen.match(/==\s*([a-z0-9_]+)/i);
+    const conflictTarget = m && m[1];
+    const targetBackend = recipeById(d.target) && recipeById(d.target).backend;
+    if (conflictTarget && targetBackend === conflictTarget)
+      return { ok: false, why: `Conflicts: ${d.target}'s ${conflictTarget} backend hard-crashes with this overlay.` };
+  }
   return { ok: true };
 }

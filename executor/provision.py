@@ -43,11 +43,28 @@ class Plan:
 
 # ---------------------------------------------------------------- ledger
 def _ledger_load() -> dict:
+    """Load the ledger. A MISSING file is the empty ledger ({}). A CORRUPT file is NOT —
+    silently returning {} here would let the next put() clobber every prior instance's
+    rollback handle (TESTS-A-009). On a decode error we back the file up and RAISE so the
+    caller never overwrites durable rollback state with an empty dict."""
+    if not os.path.exists(LEDGER):
+        return {}
     try:
         with open(LEDGER, encoding="utf-8") as f:
             return json.load(f)
-    except Exception:
-        return {}
+    except (json.JSONDecodeError, ValueError) as ex:
+        bak = LEDGER + ".corrupt-0"
+        n = 0
+        while os.path.exists(bak):
+            n += 1; bak = f"{LEDGER}.corrupt-{n}"
+        try:
+            os.replace(LEDGER, bak)
+        except OSError:
+            shutil.copyfile(LEDGER, bak)
+        raise RuntimeError(
+            f"ledger corrupt — refusing to clobber rollback handles. "
+            f"backed up to {bak}; inspect/restore before re-running. ({ex})"
+        )
 
 def _ledger_save(d: dict):
     os.makedirs(ER_ROOT, exist_ok=True)
@@ -69,8 +86,86 @@ def _vendor_targets(recipe: Recipe) -> list[tuple[str, str, str | None]]:
         out.append((a.ref, os.path.join(cache, key), a.sha256))
     return out
 
-def _baseline(recipe: Recipe):
-    return next((b for b in recipe.baselines if b.axis == (recipe.axis or "tok_s")), None)
+def _select_baseline(recipe: Recipe, model: str | None):
+    """EXTERNAL_VERIFIER gate input: pick the baseline to judge against.
+
+    Select by (axis AND model) when a model is given — comparing tok/s against an arbitrary
+    OTHER model's number is not a verdict, it's noise (PROVISION-A-005). When no model is
+    given (or the running model has no recorded baseline) we cannot honestly threshold, so we
+    return None == record-only. The lone exception: a single model-independent baseline (model
+    is NULL) on the axis can match regardless of the running model."""
+    axis = recipe.axis or "tok_s"
+    on_axis = [b for b in recipe.baselines if b.axis == axis]
+    if not on_axis:
+        return None
+    indep = [b for b in on_axis if b.model in (None, "")]
+    if model is not None:
+        exact = [b for b in on_axis if b.model == model]
+        if exact:
+            return exact[0]
+        # no exact match -> a single model-independent (NULL-model) baseline applies to any
+        # running model (the documented contract). Otherwise we cannot honestly threshold.
+        if len(indep) == 1:
+            return indep[0]
+        return None
+    # no model given: a single model-independent (NULL-model) baseline is the honest fallback —
+    # it judges any running model, so absence of a named model does not block it (IF-8).
+    if len(indep) == 1:
+        return indep[0]
+    # otherwise only honest if there is exactly ONE candidate to judge against on the axis.
+    if len(on_axis) == 1:
+        return on_axis[0]
+    return None
+
+
+def _verdict(measured: float, baseline) -> tuple[bool, str]:
+    """Judge a measurement against a baseline, honoring bound direction (PROVISION-A-005):
+    'lower' axes (tok/s, higher-is-better) PASS on measured >= value; 'upper' axes
+    (s/img, lower-is-better) PASS on measured <= value. No baseline -> record-only (never halts)."""
+    if baseline is None:
+        return True, "record-only (no model-keyed baseline)"
+    val = baseline.value or 0
+    bound = (baseline.bound or "lower").lower()
+    if bound == "upper":
+        ok = measured <= val
+        return ok, ("PASS" if ok else f"ABOVE ceiling {val} {baseline.unit or ''}".rstrip())
+    ok = measured >= val
+    return ok, ("PASS" if ok else f"BELOW baseline {val} {baseline.unit or ''}".rstrip())
+
+
+def _vram_verdict(sample: float | None, ceiling: float | None) -> tuple[str, str]:
+    """Pure VRAM-ceiling decision (EXTERNAL_VERIFIER measure gate — PROVISION-A-005 / IF-7).
+
+    Returns (verdict, msg) where verdict is one of:
+      'halt' -> sample is a real number AND breaches the ceiling. run() raises ANDON.
+      'warn' -> sample is None (could not sample). Absence of evidence is NOT a pass — the
+                ceiling is UNVERIFIED, so we warn rather than silently green-light (honesty half).
+      'ok'   -> sample is a real number AND is at/under the ceiling, OR there is no ceiling to
+                enforce (ceiling is None) and we DID get a sample.
+
+    Note the asymmetry: a None *sample* warns (we can't see VRAM); a None *ceiling* with a real
+    sample is 'ok' (nothing to enforce against, but we observed VRAM)."""
+    if sample is None:
+        return "warn", "could not sample VRAM (nvidia-smi unavailable) — ceiling unverified"
+    if ceiling is not None and sample > ceiling:
+        return "halt", f"peak VRAM {sample} GB breached the {ceiling} GB ceiling"
+    return "ok", f"peak VRAM {sample} GB <= {ceiling} GB ceiling"
+
+
+def _sample_vram_gb() -> float | None:
+    """Peak VRAM-used sample via nvidia-smi (read-only). Returns GB, or None if unavailable."""
+    exe = shutil.which("nvidia-smi")
+    if not exe:
+        return None
+    try:
+        q = subprocess.run([exe, "--query-gpu=memory.used", "--format=csv,noheader,nounits"],
+                           capture_output=True, text=True, timeout=15)
+        if q.returncode == 0 and q.stdout.strip():
+            mib = float(q.stdout.strip().splitlines()[0].strip())
+            return round(mib / 1024, 1)
+    except Exception:
+        return None
+    return None
 
 def plan(recipe: Recipe, rig: Rig, model: str | None = None, port: int = 8080, from_dir: str | None = None) -> Plan:
     pf = resolve(recipe, rig)
@@ -100,55 +195,157 @@ def plan(recipe: Recipe, rig: Rig, model: str | None = None, port: int = 8080, f
     p.steps.append(Step("activate", f"launch llama-server :{port} (+identity cookie)",
                         f"llama-server.exe -m {mdl} -ngl 99 -fa --host 127.0.0.1 --port {port}", True,
                         "stop iff pid alive AND exe under instance dir (identity-verified)", f"our :{port} server stopped; other llama.cpp untouched"))
-    b = _baseline(recipe)
-    tgt = f">= {b.value} {b.unit} on {b.model}" if b else "(no baseline on record — record-only)"
-    p.steps.append(Step("measure", "tok/s probe vs baseline + VRAM ceiling", f"256-tok probe; {tgt}; peak VRAM <= {rig.vram_gb} GB", False, None, "read-only"))
+    b = _select_baseline(recipe, model)
+    if b:
+        cmp = "<=" if (b.bound or "lower").lower() == "upper" else ">="
+        tgt = f"{cmp} {b.value} {b.unit} on {b.model}"
+    else:
+        tgt = "(no model-keyed baseline — record-only)"
+    p.steps.append(Step("measure", f"{recipe.axis or 'tok_s'} probe vs baseline + VRAM ceiling",
+                        f"256-tok probe; {tgt}; peak VRAM <= {rig.vram_gb} GB", False, None, "read-only"))
     return p
 
 
 # ---------------------------------------------------------------- live execute
+def _sha256_file(path: str) -> str:
+    """Full sha256 of a file, read in chunks (no whole-file slurp), handle context-managed."""
+    h = hashlib.sha256()
+    with open(path, "rb") as f:
+        for chunk in iter(lambda: f.read(1 << 20), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
 def _download(ref: str, dest: str, sha: str | None) -> str:
     os.makedirs(os.path.dirname(dest), exist_ok=True)
     if not os.path.exists(dest):
         urllib.request.urlretrieve(ref, dest)
-    h = hashlib.sha256(open(dest, "rb").read()).hexdigest()
-    if sha and sha not in ("<sha256>", "", None) and not h.startswith(sha[:12]):
-        raise RuntimeError(f"sha256 mismatch: got {h[:12]} expected {sha[:12]}")
+    h = _sha256_file(dest)
+    # sha absent/placeholder -> skip (honest optional-pin state). sha present -> verify in FULL
+    # (a 48-bit prefix compare let a forged near-collision pass — PROVISION-A-004).
+    if sha and sha not in ("<sha256>", "", None) and h != sha:
+        raise RuntimeError(f"sha256 mismatch: got {h} expected {sha}")
     return h
 
-def _alive(pid: int) -> bool:
-    try:
-        out = subprocess.run(["tasklist", "/FI", f"PID eq {pid}", "/NH"], capture_output=True, text=True, timeout=10)
-        return str(pid) in out.stdout
-    except Exception:
-        return False
+def _alive(pid: int):
+    """Is pid running? Parse the PID *column* of tasklist's CSV output, not a raw substring of
+    the whole row (PROVISION-A-006: a stray '80' in a memory column must not read as pid 80).
 
-def _exe_under(pid: int, root: str) -> bool:
-    """identity check: does the process at pid run an exe inside our instance dir?"""
+    TRI-STATE (PROVISION-A-001/IF-3), so an unrunnable probe never fails-safe to a dishonest
+    'process gone' verdict over a possibly-live orphan:
+      True  -> verified ALIVE: the pid appears in the PID column.
+      False -> verified GONE: the probe ran, returned a row set (or a clean 'no tasks' result),
+               and the pid is NOT in any PID column.
+      None  -> INCONCLUSIVE: the probe couldn't run / timed out / OS error / non-zero return.
+               Absence of evidence is not evidence the process is gone — the caller must NOT
+               treat None as a clean teardown."""
     try:
-        out = subprocess.run(["wmic", "process", "where", f"processid={pid}", "get", "executablepath", "/value"],
+        out = subprocess.run(["tasklist", "/FI", f"PID eq {pid}", "/NH", "/FO", "CSV"],
                              capture_output=True, text=True, timeout=10)
-        return os.path.normcase(os.path.normpath(root)) in os.path.normcase(out.stdout)
     except Exception:
-        return False
+        return None  # probe tool absent / timed out / OS error -> inconclusive, never a silent gone
+    if out.returncode != 0:
+        return None  # tasklist failed -> cannot confirm the pid is gone
+    text = (out.stdout or "").strip()
+    if not text:
+        # tasklist with a PID filter that matches nothing prints an "INFO: No tasks..." line to
+        # stdout (rc 0). A truly empty stdout on rc 0 is ambiguous -> stay inconclusive.
+        return None
+    if text.upper().startswith("INFO:"):
+        return False  # filter ran, matched no task -> verified gone
+    import csv, io
+    for row in csv.reader(io.StringIO(text)):
+        # CSV columns: Image Name, PID, Session Name, Session#, Mem Usage
+        if len(row) >= 2 and row[1].strip() == str(pid):
+            return True
+    return False  # rows parsed, pid not in any PID column -> verified gone
+
+def _exe_under(pid: int, root: str):
+    """Identity check: does the process at pid run an exe inside our instance dir?
+
+    Returns a TRI-STATE (PROVISION-A-001):
+      True  -> verified: the exe path lives under `root` (safe to kill — it's ours)
+      False -> verified: a path was read and it is NOT under `root` (recycled/unrelated pid)
+      None  -> INCONCLUSIVE: the probe couldn't run / returned nothing. Absence of evidence is
+               NOT evidence of safety — the caller must NOT kill and must NOT claim rollback.
+
+    Uses PowerShell Get-CimInstance Win32_Process (wmic was removed on Win11 build 26300, so
+    the old wmic probe raised -> bare except -> a silent, dishonest False on every call)."""
+    ps = (
+        "$p = Get-CimInstance Win32_Process -Filter \"ProcessId=%d\" "
+        "-ErrorAction SilentlyContinue; if ($p) { $p.ExecutablePath }" % pid
+    )
+    try:
+        out = subprocess.run(
+            ["powershell", "-NoProfile", "-NonInteractive", "-Command", ps],
+            capture_output=True, text=True, timeout=15,
+        )
+    except Exception:
+        return None  # probe tool absent / failed -> inconclusive, never a silent False
+    if out.returncode != 0:
+        return None
+    exe = (out.stdout or "").strip()
+    if not exe:
+        return None  # no path read -> can't verify identity -> inconclusive
+    return os.path.normcase(os.path.normpath(root)) in os.path.normcase(os.path.normpath(exe))
 
 def compensate(iid: str):
     d = _ledger_load(); e = d.get(iid)
     if not e:
         print(f"no ledger entry for {iid}"); return
     print(f"rolling back {iid} (newest-first)")
+    # Track whether every irreversible step actually reached a known-clean post-state. The ledger
+    # state is HONEST: only 'rolled-back' when the server is verifiably stopped or already gone
+    # (PROVISION-A-002). An inconclusive identity probe or a failed kill records a truthful state
+    # and leaves rmtree un-fired so we don't destroy the instance dir of a still-live orphan.
+    stop_clean = True   # no 'stop' compensator pending defaults to clean
+    fail_states: list[str] = []
     for c in reversed(e.get("compensators", [])):
         kind = c["kind"]
         if kind == "stop":
             pid, port, root = c["pid"], c["port"], e["inst_dir"]
-            if pid and _alive(pid) and _exe_under(pid, root):
-                subprocess.run(["taskkill", "/PID", str(pid), "/F"], capture_output=True)
-                print(f"  stopped server pid={pid} :{port} (identity-verified)")
-            else:
-                print(f"  skip stop: pid={pid} not ours/alive — NOT killed (identity guard)")
+            if not pid:
+                # no pid was ever recorded (launch never reached Popen) -> nothing to stop, clean.
+                print(f"  stop: no pid recorded — server never launched (nothing to kill)")
+                continue
+            alive = _alive(pid)
+            if alive is False:
+                # verified GONE: the probe ran and the pid is not present -> honest no-op.
+                print(f"  stop: pid={pid} verified gone — process already exited (nothing to kill)")
+                continue
+            if alive is None:
+                # INCONCLUSIVE: an unrunnable _alive probe must never resolve to a clean teardown
+                # over a possibly-live orphan (IF-3). Keep the instance dir; record stop-failed.
+                stop_clean = False; fail_states.append(f"pid={pid} liveness INCONCLUSIVE — could not confirm gone")
+                print(f"  skip stop: pid={pid} liveness INCONCLUSIVE (tasklist unavailable) — NOT assuming gone; manual check needed")
+                continue
+            ident = _exe_under(pid, root)
+            if ident is True:
+                r = subprocess.run(["taskkill", "/PID", str(pid), "/F"], capture_output=True)
+                if getattr(r, "returncode", 0) == 0:
+                    print(f"  stopped server pid={pid} :{port} (identity-verified)")
+                else:
+                    stop_clean = False; fail_states.append(f"taskkill pid={pid} FAILED rc={r.returncode}")
+                    print(f"  STOP FAILED: pid={pid} :{port} kill returned rc={r.returncode} — manual kill needed")
+            elif ident is False:
+                # verified NOT ours: a recycled/unrelated pid. Correct to not kill — but the server
+                # WE launched is unaccounted for, so this is not a clean rollback.
+                stop_clean = False; fail_states.append(f"pid={pid} verified NOT ours (recycled) — our server unaccounted")
+                print(f"  skip stop: pid={pid} verified NOT ours — NOT killed (identity guard)")
+            else:  # None == inconclusive
+                stop_clean = False; fail_states.append(f"pid={pid} identity INCONCLUSIVE — not killed, manual check needed")
+                print(f"  skip stop: pid={pid} identity INCONCLUSIVE (probe unavailable) — NOT killed; manual check needed")
         elif kind == "rmtree":
-            shutil.rmtree(c["path"], ignore_errors=True); print(f"  removed {c['path']}")
-    e["state"] = "rolled-back"; _ledger_put(iid, e)
+            if stop_clean:
+                shutil.rmtree(c["path"], ignore_errors=True); print(f"  removed {c['path']}")
+            else:
+                print(f"  KEEP {c['path']} — stop not clean; not removing instance dir of a possibly-live orphan")
+    if stop_clean:
+        e["state"] = "rolled-back"
+    else:
+        e["state"] = "stop-failed"
+        e["rollback_error"] = "; ".join(fail_states)
+        print(f"  ROLLBACK INCOMPLETE — state='stop-failed': {e['rollback_error']}")
+    _ledger_put(iid, e)
 
 
 def run(recipe: Recipe, rig: Rig, execute: bool = False, model: str | None = None, port: int = 8080, from_dir: str | None = None):
@@ -217,21 +414,43 @@ def run(recipe: Recipe, rig: Rig, execute: bool = False, model: str | None = Non
                 time.sleep(1)
         if not ok:
             raise RuntimeError("ANDON: server did not become healthy within 60s")
-        # measure
+        # measure (EXTERNAL_VERIFIER gate — PROVISION-A-005)
+        N_PREDICT = 256                                  # align probe length with the documented 256-tok probe
         t0 = time.time()
         req = urllib.request.Request(f"http://127.0.0.1:{port}/completion",
-                                     data=json.dumps({"prompt": "Count: 1 2 3", "n_predict": 128}).encode(),
+                                     data=json.dumps({"prompt": "Count: 1 2 3", "n_predict": N_PREDICT}).encode(),
                                      headers={"Content-Type": "application/json"})
         resp = json.loads(urllib.request.urlopen(req, timeout=120).read())
         dt = time.time() - t0
-        ntok = resp.get("tokens_predicted", 128)
-        toks = ntok / dt if dt else 0
-        b = _baseline(recipe)
-        verdict = "record-only (no baseline)" if not b else ("PASS" if toks >= (b.value or 0) else f"BELOW baseline {b.value}")
-        print(f"  [measure] {toks:.0f} tok/s over {dt:.1f}s  -> {verdict}")
-        if b and toks < (b.value or 0):
-            raise RuntimeError(f"ANDON: {toks:.0f} tok/s below baseline {b.value} {b.unit}")
-        entry["state"] = "ready"; entry["measured_tok_s"] = round(toks, 1); _ledger_put(iid, entry)
+        # VRAM ceiling: actually SAMPLE peak VRAM and HALT on a breach (the doc promised this but
+        # run() never measured it). Absence of evidence is not safety — if we can't sample, warn.
+        ceiling = rig.vram_gb
+        vram = _sample_vram_gb()
+        vverdict, vmsg = _vram_verdict(vram, ceiling)
+        if vverdict == "halt":
+            raise RuntimeError(f"ANDON: {vmsg}")
+        elif vverdict == "warn":
+            print(f"  [measure] WARNING: {vmsg}")
+        else:
+            print(f"  [measure] {vmsg}")
+        # token count: use the REAL tokens_predicted. Defaulting to 128 (the old code) fabricated a
+        # number and inflated tok/s; an absent count is a measurement error, not a free pass.
+        ntok = resp.get("tokens_predicted")
+        if ntok is None:
+            raise RuntimeError("ANDON: server response had no tokens_predicted — cannot measure tok/s")
+        if not dt:
+            raise RuntimeError("ANDON: zero elapsed time on the probe — cannot measure tok/s")
+        toks = ntok / dt
+        b = _select_baseline(recipe, model)
+        passed, verdict = _verdict(toks, b)
+        unit = (b.unit if b else recipe.axis) or "tok/s"
+        print(f"  [measure] {toks:.0f} {unit} over {dt:.1f}s ({ntok} tok)  -> {verdict}")
+        if not passed:
+            raise RuntimeError(f"ANDON: {toks:.0f} {unit} fails baseline ({verdict})")
+        entry["state"] = "ready"; entry["measured_tok_s"] = round(toks, 1)
+        if vram is not None:
+            entry["measured_vram_gb"] = vram
+        _ledger_put(iid, entry)
         print(f"\nREADY — {recipe.slug} on :{port} (instance {iid}). `er teardown {iid}` to roll back.")
     except Exception as ex:
         print(f"\nANDON HALT: {ex}")

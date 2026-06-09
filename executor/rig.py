@@ -31,6 +31,39 @@ class Rig:
         return int(m.group(1)) if m else None
 
 
+def _parse_smi_query(line: str | None) -> dict | None:
+    """Parse one `--query-gpu=name,memory.total,driver_version` CSV row.
+
+    The GPU name can itself contain commas (e.g. "NVIDIA RTX 5000, Ada Generation"), so split
+    from the RIGHT: the last two fields are always memory + driver; everything before is the name.
+    Returns gpu/vram_gb/driver, or None if the row isn't parseable (so the caller stays honest
+    instead of recording a blind fingerprint).
+    """
+    if not line or not line.strip():
+        return None
+    parts = [x.strip() for x in line.strip().splitlines()[0].rsplit(",", 2)]
+    if len(parts) != 3:
+        return None
+    name, mem, drv = parts
+    try:
+        vram = round(float(mem) / 1024, 1)
+    except ValueError:
+        return None
+    return {"gpu": name, "vram_gb": vram, "driver": drv}
+
+
+def _parse_cuda_runtime(header: str | None) -> str | None:
+    """Pull the CUDA runtime (UMD) version from the `nvidia-smi` header.
+
+    Matches BOTH the classic 'CUDA Version: 12.8' token and the live-rig
+    'CUDA UMD Version: 13.3' token (the UMD wording the conflict check reads).
+    """
+    if not header:
+        return None
+    m = re.search(r"CUDA(?:\s+UMD)?\s+Version:\s*([\d.]+)", header)
+    return m.group(1) if m else None
+
+
 def _nvidia_smi() -> dict:
     out = {}
     exe = shutil.which("nvidia-smi")
@@ -39,16 +72,15 @@ def _nvidia_smi() -> dict:
     try:
         q = subprocess.run([exe, "--query-gpu=name,memory.total,driver_version",
                             "--format=csv,noheader,nounits"], capture_output=True, text=True, timeout=15)
-        if q.returncode == 0 and q.stdout.strip():
-            name, mem, drv = [x.strip() for x in q.stdout.strip().splitlines()[0].split(",")]
-            out["gpu"] = name
-            out["vram_gb"] = round(float(mem) / 1024, 1)
-            out["driver"] = drv
+        if q.returncode == 0:
+            parsed = _parse_smi_query(q.stdout)
+            if parsed:
+                out.update(parsed)
         # CUDA runtime (UMD) from `nvidia-smi` header
         h = subprocess.run([exe], capture_output=True, text=True, timeout=15)
-        cm = re.search(r"CUDA Version:\s*([\d.]+)", h.stdout or "")
-        if cm:
-            out["cuda_runtime"] = cm.group(1)
+        cr = _parse_cuda_runtime(h.stdout)
+        if cr:
+            out["cuda_runtime"] = cr
     except Exception:
         pass
     return out
@@ -75,14 +107,36 @@ def _sm_for(gpu: str | None) -> str | None:
     return None
 
 
+def _parse_wsl2_version(raw: bytes | str | None) -> str | None:
+    """Pull the WSL version from `wsl --version` output.
+
+    `wsl --version` emits UTF-16-LE; capturing with text=True garbled it and the regex never
+    matched (-> wsl2_version=None despite a live WSL2, mis-firing the defect_floor + wsl2-docker
+    provider). Decode from bytes here: try utf-16-le first, then strip NUL bytes as a fallback.
+    """
+    if raw is None:
+        return None
+    if isinstance(raw, bytes):
+        try:
+            text = raw.decode("utf-16-le")
+        except UnicodeDecodeError:
+            text = raw.replace(b"\x00", b"").decode("utf-8", "ignore")
+        if "WSL version" not in text:
+            # not UTF-16 after all (e.g. an already-utf-8 stub) — decode straight
+            text = raw.replace(b"\x00", b"").decode("utf-8", "ignore")
+    else:
+        text = raw
+    m = re.search(r"WSL version:\s*([\d.]+)", text)
+    return m.group(1) if m else None
+
+
 def _wsl2_version() -> str | None:
     exe = shutil.which("wsl") or shutil.which("wsl.exe")
     if not exe:
         return None
     try:
-        r = subprocess.run([exe, "--version"], capture_output=True, text=True, timeout=10)
-        m = re.search(r"WSL version:\s*([\d.]+)", r.stdout or "")
-        return m.group(1) if m else None
+        r = subprocess.run([exe, "--version"], capture_output=True, timeout=10)
+        return _parse_wsl2_version(r.stdout)
     except Exception:
         return None
 

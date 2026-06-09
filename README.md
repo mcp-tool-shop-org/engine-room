@@ -41,14 +41,46 @@ A recipe is **polymorphic** — four kinds, each with a different shape:
 - **Every irreversible step has a named undo** with an honest post-rollback state; the
   machine-global ones require explicit human approval.
 
-## Design
+## Status
 
-engine-room is in active design; the executor is not yet implemented. The first artifact is
-the operator UI:
+The executor is implemented. The `er` CLI reads the recipe layer and resolves a recipe
+against the live rig (`rig` / `list` / `show` / `preflight`, all non-side-effecting), and the
+provisioner runs the reconcile loop — **dry-run by default**, with a wired `--execute` path
+that materializes the pinned artifacts, launches a local server, and measures it against the
+recipe's baseline (`provision` / `teardown` / `status`). See [`executor/README.md`](executor/README.md).
 
-- [`design/ui-control-panel.claude-design-brief.md`](design/ui-control-panel.claude-design-brief.md)
-  — the Control Panel: browse recipes and run them, with the full event-handler map and
-  usability requirements.
+Reproducibility is honestly partial today: pins are resolved against an index, and unpinned
+artifacts are accepted — vendoring them into a content-addressed store so `reproducible` is
+*earned* is **Goal 1**.
+
+The operator UI ships as a self-contained prototype (mock data + timer-simulated side effects,
+faithful to the real JSON/WS API):
+
+- [`app/`](app/) — the Control Panel: browse recipes and run them, with live telemetry, ANDON
+  halts, and rollback. Designed from
+  [`design/ui-control-panel.claude-design-brief.md`](design/ui-control-panel.claude-design-brief.md)
+  (the full event-handler map and usability requirements).
+
+## Security / threat model
+
+The **recipe layer** (`tensor-engine-knowledge/engines.db`) is the trusted knowledge input:
+the verified, sourced recipes that say what to build and what targets to hit. engine-room
+treats it as the source of truth.
+
+`er provision --execute` is the only command that touches the rig. It is **gated behind an
+explicit `--execute` and `--model`** — every other command, and `provision` without
+`--execute`, is read-only / dry-run. When you do execute, it:
+
+- **downloads** the recipe's pinned artifacts and **sha256-verifies** them *when the pin
+  carries a sha* — unpinned / placeholder shas are currently accepted (the Goal-1 vendoring
+  gap above; treat the recipe DB and its artifact URLs as trusted until that lands),
+- **extracts** archives into a per-instance directory (never global PATH),
+- **launches** a local server (`127.0.0.1`) and can **stop** it — teardown is identity-verified
+  (it only kills a PID whose executable lives under our instance dir, so it never kills an
+  unrelated process).
+
+Every irreversible step is recorded on a ledger *before* it runs and has a named, newest-first
+compensator. To report a vulnerability, see [`SECURITY.md`](SECURITY.md).
 
 ## License
 

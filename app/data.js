@@ -50,10 +50,11 @@
  *                   'done'|'applied'|'halted'|'tearing-down'|'rolling-back'|'stale'
  *   phase           string           current human-readable phase label
  *   steps           [{ label, cmd, status:'pending'|'active'|'ok'|'fail' }]
- *   telemetry       { axisValue, axisHistory[], vram, vramCeiling, temp, power,
- *                     upstreams?, delta? }
+ *   telemetry       { axis, value, history[], baseline:{model,value,unit,bound},
+ *                     vram, vramCeiling, temp, power, samples,
+ *                     upstreams?, delta?, bpw?, bpwCeil? }
  *   ledger          [{...compensator, doneAt }]   compensators run (newest-first teardown)
- *   andon           { expected, because, recovery:{label,event} } | null
+ *   andon           { expected, because, pin?, recovery:{label,event} } | null
  *   lineage         { from, to } | null           after re-resolve / drift
  *
  * -----------------------------------------------------------------------------
