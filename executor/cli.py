@@ -87,8 +87,27 @@ def cmd_preflight(args):
 
 
 def cmd_provision(args):
-    sys.exit("provision (materialize -> launch -> measure) is the executor's next increment.\n"
-             "Run `er preflight <slug>` to resolve + capability/resolvability-check a recipe today.")
+    from . import provision
+    r = R.load_recipe(args.slug, args.db)
+    if not r:
+        sys.exit(f"no recipe: {args.slug}")
+    provision.run(r, RIG.detect(), execute=args.execute, model=args.model, port=args.port, from_dir=getattr(args, "from_dir", None))
+
+
+def cmd_teardown(args):
+    from . import provision
+    provision.compensate(args.instance)
+
+
+def cmd_status(args):
+    from . import provision
+    d = provision._ledger_load()
+    if not d:
+        print("no provisioned instances"); return
+    for iid, e in d.items():
+        extra = f"  pid={e.get('pid')} :{e.get('port')}" if e.get("pid") else ""
+        tps = f"  {e.get('measured_tok_s')} tok/s" if e.get("measured_tok_s") else ""
+        print(f"  {iid}  {e.get('state'):12s} {e.get('recipe','')[:46]}{extra}{tps}")
 
 
 def main(argv=None):
@@ -99,7 +118,13 @@ def main(argv=None):
     pl = sub.add_parser("list", help="list recipes"); pl.add_argument("--all", action="store_true"); pl.set_defaults(fn=cmd_list)
     ps = sub.add_parser("show", help="show a recipe"); ps.add_argument("slug"); ps.set_defaults(fn=cmd_show)
     pp = sub.add_parser("preflight", help="resolve + capability/resolvability check (no side effects)"); pp.add_argument("slug"); pp.set_defaults(fn=cmd_preflight)
-    sub.add_parser("provision", help="(next increment) materialize -> launch -> measure").set_defaults(fn=cmd_provision)
+    pv = sub.add_parser("provision", help="plan (dry-run) or --execute materialize->launch->measure")
+    pv.add_argument("slug"); pv.add_argument("--execute", action="store_true"); pv.add_argument("--model")
+    pv.add_argument("--from", dest="from_dir", help="reuse an existing engine dir (skip download)")
+    pv.add_argument("--port", type=int, default=8080); pv.set_defaults(fn=cmd_provision)
+    pt = sub.add_parser("teardown", help="roll back a provisioned instance (compensators, newest-first)")
+    pt.add_argument("instance"); pt.set_defaults(fn=cmd_teardown)
+    sub.add_parser("status", help="show provisioned instances (the ledger)").set_defaults(fn=cmd_status)
     args = p.parse_args(argv)
     args.fn(args)
 
