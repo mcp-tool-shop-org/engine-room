@@ -1,0 +1,34 @@
+summary: ""
+boundaries:
+  - name: .github
+    globs:
+      - .github/**
+    role: config
+  - name: app
+    globs:
+      - app/**
+    role: code
+  - name: design
+    globs:
+      - design/**
+    role: docs
+  - name: executor
+    globs:
+      - executor/**
+    role: code
+  - name: npm
+    globs:
+      - npm/**
+    role: code
+  - name: root
+    globs:
+      - "*"
+    role: config
+  - name: site
+    globs:
+      - site/**
+    role: site
+  - name: tests
+    globs:
+      - tests/**
+    role: test

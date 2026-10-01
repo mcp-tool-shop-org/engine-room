@@ -1,0 +1,284 @@
+{
+  "authored": [
+    ".github/",
+    "design/",
+    "root",
+    "site/"
+  ],
+  "breaks": [
+    {
+      "doors": 2,
+      "importedBy": [
+        "root"
+      ],
+      "importedByTests": [
+        "tests"
+      ],
+      "kind": "part",
+      "name": "executor",
+      "partLabel": "executor",
+      "spawnedBy": [
+        "root"
+      ]
+    },
+    {
+      "doors": 2,
+      "importedBy": [],
+      "importedByTests": [],
+      "kind": "part",
+      "name": "npm",
+      "partLabel": "npm"
+    }
+  ],
+  "changes": {
+    "first": true
+  },
+  "changesTogether": [],
+  "changesTogetherNote": [
+    "Window: 180 days; a pair counts from 3 shared commits, since the window holds fewer than 30 qualifying commits."
+  ],
+  "changesTogetherWithTests": 0,
+  "commit": "d11ed2bc6bf061f461163c778902d5e0d722c17c",
+  "defaultBranch": "main",
+  "derived": "8 parts, in Python (12 files), JavaScript (7 files), CSS (3 files), HTML (2 files), TypeScript (2 files) and Astro (1 file). Work enters through 5 doors; the busiest is CI, which reaches 2 parts. It publishes @mcptoolshop/engine-room to npm. It deploys a site to GitHub Pages. People run engine-room and er.",
+  "doors": [
+    {
+      "checks": [],
+      "checksCount": 0,
+      "checksMore": 0,
+      "file": ".github/workflows/ci.yml",
+      "id": ".github/workflows/ci.yml",
+      "landings": [],
+      "name": "CI",
+      "pushes": false,
+      "reach": [
+        {
+          "boundary": "tests",
+          "depth": 0,
+          "files": 4
+        },
+        {
+          "boundary": "executor",
+          "depth": 1,
+          "files": 7
+        }
+      ],
+      "runs": [
+        "tests/"
+      ],
+      "runsCount": 1,
+      "runsMore": 0,
+      "sends": [],
+      "stages": [],
+      "triggers": [
+        "on a pull request",
+        "on a push touching 8 paths",
+        "or by hand"
+      ]
+    },
+    {
+      "checks": [],
+      "checksCount": 0,
+      "checksMore": 0,
+      "file": ".github/workflows/pages.yml",
+      "id": ".github/workflows/pages.yml",
+      "landings": [],
+      "name": "Deploy site to GitHub Pages",
+      "pushes": false,
+      "reach": [
+        {
+          "boundary": "site",
+          "depth": 0,
+          "files": 5
+        }
+      ],
+      "runs": [
+        "site/astro.config.mjs",
+        "site/src/"
+      ],
+      "runsCount": 2,
+      "runsMore": 0,
+      "sends": [
+        "deploys the site"
+      ],
+      "stages": [],
+      "triggers": [
+        "on a push to main touching 2 paths",
+        "or by hand"
+      ]
+    },
+    {
+      "checks": [
+        "npm/bin/engine-room.mjs"
+      ],
+      "checksCount": 1,
+      "checksMore": 0,
+      "file": ".github/workflows/release.yml",
+      "id": ".github/workflows/release.yml",
+      "landings": [],
+      "name": "Release",
+      "pushes": false,
+      "reach": [
+        {
+          "boundary": "npm",
+          "depth": 0,
+          "files": 1
+        }
+      ],
+      "runs": [],
+      "runsCount": 0,
+      "runsMore": 0,
+      "sends": [
+        "publishes @mcptoolshop/engine-room to npm",
+        "creates a GitHub release on a tag push"
+      ],
+      "stages": [],
+      "triggers": [
+        "when a tag matching `v*` is pushed",
+        "or by hand"
+      ]
+    },
+    {
+      "checks": [],
+      "checksCount": 0,
+      "checksMore": 0,
+      "file": "npm/package.json",
+      "id": "npm/package.json#engine-room",
+      "kind": "command",
+      "landings": [],
+      "name": "engine-room",
+      "pushes": false,
+      "reach": [
+        {
+          "boundary": "npm",
+          "depth": 0,
+          "files": 1
+        }
+      ],
+      "runs": [
+        "npm/bin/engine-room.mjs"
+      ],
+      "runsCount": 1,
+      "runsMore": 0,
+      "sends": [],
+      "stages": [],
+      "triggers": []
+    },
+    {
+      "checks": [],
+      "checksCount": 0,
+      "checksMore": 0,
+      "file": "pyproject.toml",
+      "id": "pyproject.toml#er",
+      "kind": "command",
+      "landings": [],
+      "name": "er",
+      "pushes": false,
+      "reach": [
+        {
+          "boundary": "executor",
+          "depth": 0,
+          "files": 7
+        }
+      ],
+      "runs": [
+        "executor/cli.py"
+      ],
+      "runsCount": 1,
+      "runsMore": 0,
+      "sends": [],
+      "stages": [],
+      "triggers": []
+    }
+  ],
+  "duplicates": [],
+  "duplicatesLead": null,
+  "duplicatesNote": [],
+  "edges": [],
+  "engine": "1.24.0",
+  "generated": [
+    {
+      "place": "app/dist/control-panel.html",
+      "writers": [
+        "app/build.mjs"
+      ]
+    },
+    {
+      "place": "app/screenshots/*-catalog-dark.png",
+      "writers": [
+        "app/screenshots/capture.mjs"
+      ]
+    }
+  ],
+  "generatedAt": "2026-10-01T02:57:02.154Z",
+  "limits": [
+    "1 import could not be resolved: `verify.py` imports a path built at run time.",
+    "2 writes use paths built at run time and are not named here.",
+    "13 writes and 5 reads go to a path their caller passes, not to this repository.",
+    "1 command is built at run time and not followed.",
+    "Statistics confidence is low: fewer than 30 qualifying commits in the window, and fewer than 20 source files reach 10 revisions."
+  ],
+  "mainDoor": ".github/workflows/ci.yml",
+  "partLabels": {
+    ".github": ".github",
+    "app": "app",
+    "design": "design",
+    "executor": "executor",
+    "npm": "npm",
+    "root": "the repository root",
+    "site": "the site",
+    "tests": "tests"
+  },
+  "parts": 8,
+  "readers": [],
+  "repo": "mcp-tool-shop-org/engine-room",
+  "sequences": [],
+  "startDoor": "pyproject.toml#er",
+  "startHere": [
+    "executor/cli.py",
+    "executor/resolve.py",
+    "executor/recipes.py"
+  ],
+  "startReason": "This path follows er (a command people run) from its entry, since CI runs only tests.",
+  "summary": null,
+  "summaryFrom": null,
+  "testFiles": 4,
+  "testedBy": {
+    "app": 0,
+    "executor": 3,
+    "npm": 0
+  },
+  "unnamedWrites": 2,
+  "unread": [
+    {
+      "place": "app/dist/control-panel.html",
+      "writers": [
+        "app/build.mjs"
+      ]
+    },
+    {
+      "place": "app/screenshots/*-catalog-dark.png",
+      "writers": [
+        "app/screenshots/capture.mjs"
+      ]
+    }
+  ],
+  "unreadFiles": 0,
+  "unreadNote": [],
+  "untested": [
+    {
+      "part": "app",
+      "partLabel": "app",
+      "testedBy": 0
+    },
+    {
+      "part": "npm",
+      "partLabel": "npm",
+      "testedBy": 0
+    }
+  ],
+  "untestedNote": [
+    "verify.py runs in no workflow."
+  ],
+  "written": 2
+}

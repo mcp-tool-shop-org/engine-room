@@ -1,0 +1,1806 @@
+{
+  "boundaries": [
+    {
+      "dynamicReads": 0,
+      "dynamicSpawns": 0,
+      "dynamicSpawnsInTests": 0,
+      "dynamicWrites": 0,
+      "entryPoints": [],
+      "externals": 0,
+      "files": [
+        {
+          "hash": "9e8464c51413ebeb6d59c25269edab45c2213a0b37238637a3608d249367bff0",
+          "path": ".github/workflows/ci.yml"
+        },
+        {
+          "hash": "d430fca979fdc2a7a2dda249bf51f9251649562ef5b81e89b7567479197692f2",
+          "path": ".github/workflows/pages.yml"
+        },
+        {
+          "hash": "c76a3a5c94b6da2630070eb70d8e02ccf8fbae642da3ba892e8f1f037ae0d05a",
+          "path": ".github/workflows/release.yml"
+        }
+      ],
+      "globs": [
+        ".github/**"
+      ],
+      "importConfidence": "full",
+      "name": ".github",
+      "origin": "authored",
+      "role": "config",
+      "testedBy": 0,
+      "unresolvedSites": 0
+    },
+    {
+      "dynamicReads": 0,
+      "dynamicSpawns": 1,
+      "dynamicSpawnsInTests": 0,
+      "dynamicWrites": 0,
+      "entryPoints": [
+        "app/index.html"
+      ],
+      "externals": 0,
+      "files": [
+        {
+          "hash": "3120f16fb18eb8fd5cf99ab3d5e364b05d8fe01c0b18b3ee6c2124382d2f8765",
+          "path": "app/README.md"
+        },
+        {
+          "failurePaths": [
+            {
+              "kind": "throw",
+              "line": 29
+            }
+          ],
+          "hash": "f1a06ac7128377b77270025116d97121bd5fac7482b6059646f35968eeec9610",
+          "path": "app/build.mjs"
+        },
+        {
+          "hash": "f07dec2ff16d726365ff32d71f346b70a4bc8e3a80c2b327c4b4619f21894257",
+          "path": "app/data.js"
+        },
+        {
+          "hash": "2da098e3f31f7f14fb49a8d542d9c229f4245b34f3a87866b2ef117aebff4fde",
+          "path": "app/dist/control-panel.html"
+        },
+        {
+          "hash": "718f3cb210b759de148c45d3d13d60459f14641190a33f9247301754ca64932a",
+          "path": "app/engine.js"
+        },
+        {
+          "hash": "d9e27a178d110bcb35a84583800273976539f9b9ed4d9b594e428ad1ffcbfdfe",
+          "path": "app/index.html"
+        },
+        {
+          "hash": "1662fdb4c3ea8407f263ff36f5b0f05f12b8f2f5a963dc67bfa7177e2b023cbb",
+          "path": "app/logo.png"
+        },
+        {
+          "hash": "66e9ce8a7946d2ac2792b6854740e770cccfc81e46781b9d4c366402ce5a29b6",
+          "path": "app/screenshots/01-catalog-dark.png"
+        },
+        {
+          "hash": "d21a15c931f07873a99b8b36bafbc757b1c667a447f5f29e2133f4ccbac74ad3",
+          "path": "app/screenshots/02-catalog-light.png"
+        },
+        {
+          "hash": "ef488a4dd0983765a534a84eca0cb78efdfca1d2854d6d03a749046397b8088c",
+          "path": "app/screenshots/03-offline-readonly.png"
+        },
+        {
+          "hash": "d57ce8bd1377e5e23f8b74c896d0520c40bd13b6352bdaa60b20258c803372a7",
+          "path": "app/screenshots/04-detail-server.png"
+        },
+        {
+          "hash": "f7facd4d9f0f28c3e7cd3a29277cb6decccd71db4654e237cd7b22698fc4fde8",
+          "path": "app/screenshots/05-server-running.png"
+        },
+        {
+          "hash": "66237dbdd938fffa7b842dd5fdfe47867c18fc19bfbc75a8bccc38cb42dbe420",
+          "path": "app/screenshots/06-detail-producer.png"
+        },
+        {
+          "hash": "00dcf7636c0a3f7fc1e3ac6b9479255ac8acb053266f1a498f22799639ca67e8",
+          "path": "app/screenshots/07-detail-modifier.png"
+        },
+        {
+          "hash": "f9c59641074fd726ee0d7721284eb95ea4386fa03b79b88c2a5d02a906c5d42e",
+          "path": "app/screenshots/08-detail-router.png"
+        },
+        {
+          "hash": "27e249c68af40f9b2254a5b06f0f07bd25b52d81f0867e3ce7f18b08bc568bae",
+          "path": "app/screenshots/09-andon-halt.png"
+        },
+        {
+          "hash": "795293236c07b69baeb97c949a06ad2881f8cb71c4bc73cbf50dbb76f37d838d",
+          "path": "app/screenshots/10-empty-search.png"
+        },
+        {
+          "hash": "8e61e75935b6ad71254eb39a23e5cb76421f26df0842eb2131dff18609f2e030",
+          "path": "app/screenshots/README.md"
+        },
+        {
+          "failurePaths": [
+            {
+              "in": "main",
+              "kind": "catch",
+              "line": 77
+            },
+            {
+              "in": "waitForWs",
+              "kind": "catch",
+              "line": 88
+            },
+            {
+              "in": "waitForWs",
+              "kind": "throw",
+              "line": 91
+            },
+            {
+              "in": "waitFor",
+              "kind": "throw",
+              "line": 120
+            }
+          ],
+          "hash": "f0c39d09be78410d7be8c9933b0020105a8d281f196a7f0c90fbd6c8aadaf453",
+          "path": "app/screenshots/capture.mjs"
+        },
+        {
+          "hash": "b0f9471415fbaa826e8905996ec577628a0110d85d3eff40f2aafad29af43a56",
+          "path": "app/styles.css"
+        },
+        {
+          "failurePaths": [
+            {
+              "kind": "catch",
+              "line": 519
+            }
+          ],
+          "hash": "db9fc6f681d1c55c88f2cfddc9381579b50cf77994af1662b3ad55396a6c13ee",
+          "path": "app/ui.js"
+        }
+      ],
+      "globs": [
+        "app/**"
+      ],
+      "importConfidence": "full",
+      "name": "app",
+      "origin": "mixed",
+      "outsidePlaces": [
+        {
+          "reads": 1,
+          "where": [
+            "caller"
+          ],
+          "writes": 1
+        }
+      ],
+      "outsideReads": 1,
+      "outsideWrites": 1,
+      "role": "code",
+      "testedBy": 0,
+      "unresolvedSites": 0
+    },
+    {
+      "dynamicReads": 0,
+      "dynamicSpawns": 0,
+      "dynamicSpawnsInTests": 0,
+      "dynamicWrites": 0,
+      "entryPoints": [],
+      "externals": 0,
+      "files": [
+        {
+          "hash": "96932e0c231695d00838d5bb7666153c2d0bbfbcf5c2f148e056c6ed70ff2c62",
+          "path": "design/data-contract.md"
+        },
+        {
+          "hash": "418cd55ad92111517a636caa2d25305f6a5dd6006dc4e2ec110f6d7850e7fff7",
+          "path": "design/ui-control-panel.claude-design-brief.md"
+        }
+      ],
+      "globs": [
+        "design/**"
+      ],
+      "importConfidence": "full",
+      "name": "design",
+      "origin": "authored",
+      "role": "docs",
+      "testedBy": 0,
+      "unresolvedSites": 0
+    },
+    {
+      "dynamicReads": 0,
+      "dynamicSpawns": 0,
+      "dynamicSpawnsInTests": 0,
+      "dynamicWrites": 2,
+      "entryPoints": [
+        "executor/cli.py"
+      ],
+      "externals": 0,
+      "files": [
+        {
+          "hash": "02813b9c614b0993cebe8526955ac06688c4f5dd40c3699510177ffb936fec4f",
+          "path": "executor/README.md"
+        },
+        {
+          "constantOnly": true,
+          "hash": "58c89d570ba7c61588b240827f92f75b8ab1a3c7d350ed25a9e4019fa0b270e7",
+          "path": "executor/__init__.py"
+        },
+        {
+          "entry": "main",
+          "entryRule": 0,
+          "exports": [
+            "cmd_list",
+            "cmd_preflight",
+            "cmd_provision",
+            "cmd_rig",
+            "cmd_show",
+            "cmd_status",
+            "cmd_teardown",
+            "main"
+          ],
+          "failurePaths": [
+            {
+              "in": "main",
+              "kind": "except",
+              "line": 162
+            },
+            {
+              "in": "main",
+              "kind": "raise",
+              "line": 164
+            }
+          ],
+          "hash": "037346f2c6afe5e882f43a8650f6c1b536ba364ba2636dccc54adb25c904441f",
+          "importOrder": [
+            "executor/__init__.py",
+            "executor/recipes.py",
+            "executor/rig.py",
+            "executor/resolve.py",
+            "executor/providers.py",
+            "executor/provision.py"
+          ],
+          "importsFiles": [
+            "executor/__init__.py",
+            "executor/providers.py",
+            "executor/provision.py",
+            "executor/recipes.py",
+            "executor/resolve.py",
+            "executor/rig.py"
+          ],
+          "path": "executor/cli.py",
+          "sequences": [
+            {
+              "calls": [
+                {
+                  "line": 22,
+                  "name": "detect",
+                  "target": {
+                    "file": "executor/__init__.py"
+                  }
+                }
+              ],
+              "exported": true,
+              "invokedAtTopLevel": false,
+              "isDefaultExport": false,
+              "name": "cmd_rig"
+            },
+            {
+              "calls": [
+                {
+                  "line": 33,
+                  "name": "list_recipes",
+                  "target": {
+                    "file": "executor/__init__.py"
+                  }
+                }
+              ],
+              "exported": true,
+              "invokedAtTopLevel": false,
+              "isDefaultExport": false,
+              "name": "cmd_list"
+            },
+            {
+              "calls": [
+                {
+                  "line": 41,
+                  "name": "load_recipe",
+                  "target": {
+                    "file": "executor/__init__.py"
+                  }
+                }
+              ],
+              "exported": true,
+              "invokedAtTopLevel": false,
+              "isDefaultExport": false,
+              "name": "cmd_show"
+            },
+            {
+              "calls": [
+                {
+                  "line": 67,
+                  "name": "load_recipe",
+                  "target": {
+                    "file": "executor/__init__.py"
+                  }
+                },
+                {
+                  "line": 70,
+                  "name": "detect",
+                  "target": {
+                    "file": "executor/__init__.py"
+                  }
+                },
+                {
+                  "line": 71,
+                  "name": "resolve",
+                  "target": {
+                    "file": "executor/resolve.py"
+                  }
+                },
+                {
+                  "line": 72,
+                  "name": "provider_for",
+                  "target": {
+                    "file": "executor/providers.py"
+                  }
+                }
+              ],
+              "exported": true,
+              "invokedAtTopLevel": false,
+              "isDefaultExport": false,
+              "name": "cmd_preflight"
+            },
+            {
+              "calls": [
+                {
+                  "line": 112,
+                  "name": "load_recipe",
+                  "target": {
+                    "file": "executor/__init__.py"
+                  }
+                },
+                {
+                  "line": 115,
+                  "name": "detect",
+                  "target": {
+                    "file": "executor/__init__.py"
+                  }
+                },
+                {
+                  "line": 115,
+                  "name": "run",
+                  "target": {
+                    "file": "executor/__init__.py"
+                  }
+                }
+              ],
+              "exported": true,
+              "invokedAtTopLevel": false,
+              "isDefaultExport": false,
+              "name": "cmd_provision"
+            },
+            {
+              "calls": [
+                {
+                  "line": 120,
+                  "name": "compensate",
+                  "target": {
+                    "file": "executor/__init__.py"
+                  }
+                }
+              ],
+              "exported": true,
+              "invokedAtTopLevel": false,
+              "isDefaultExport": false,
+              "name": "cmd_teardown"
+            },
+            {
+              "calls": [
+                {
+                  "line": 125,
+                  "name": "_ledger_load",
+                  "target": {
+                    "file": "executor/__init__.py"
+                  }
+                }
+              ],
+              "exported": true,
+              "invokedAtTopLevel": false,
+              "isDefaultExport": false,
+              "name": "cmd_status"
+            }
+          ]
+        },
+        {
+          "exports": [
+            "provider_for"
+          ],
+          "failurePaths": [
+            {
+              "in": "materialize",
+              "kind": "raise",
+              "line": 46
+            },
+            {
+              "in": "launch",
+              "kind": "raise",
+              "line": 49
+            },
+            {
+              "in": "probe",
+              "kind": "raise",
+              "line": 52
+            },
+            {
+              "in": "materialize",
+              "kind": "raise",
+              "line": 78
+            },
+            {
+              "in": "materialize",
+              "kind": "raise",
+              "line": 83
+            },
+            {
+              "in": "launch",
+              "kind": "raise",
+              "line": 114
+            },
+            {
+              "in": "launch",
+              "kind": "raise",
+              "line": 119
+            },
+            {
+              "in": "probe",
+              "kind": "raise",
+              "line": 158
+            },
+            {
+              "in": "probe",
+              "kind": "except",
+              "line": 163
+            },
+            {
+              "in": "probe",
+              "kind": "raise",
+              "line": 166
+            },
+            {
+              "in": "probe",
+              "kind": "except",
+              "line": 179
+            },
+            {
+              "in": "probe",
+              "kind": "raise",
+              "line": 180
+            },
+            {
+              "in": "probe",
+              "kind": "except",
+              "line": 183
+            },
+            {
+              "in": "probe",
+              "kind": "raise",
+              "line": 185
+            },
+            {
+              "in": "probe",
+              "kind": "raise",
+              "line": 194
+            },
+            {
+              "in": "probe",
+              "kind": "raise",
+              "line": 202
+            },
+            {
+              "in": "probe",
+              "kind": "raise",
+              "line": 204
+            },
+            {
+              "in": "probe",
+              "kind": "raise",
+              "line": 211
+            },
+            {
+              "in": "_port_free",
+              "kind": "except",
+              "line": 273
+            },
+            {
+              "in": "_server_log_tail",
+              "kind": "except",
+              "line": 298
+            },
+            {
+              "in": "_server_log_tail",
+              "kind": "except",
+              "line": 303
+            }
+          ],
+          "hash": "8e39794c066f26e0ce982b8ab918c7ae3560250efbb36ef73b441599386d9a76",
+          "importOrder": [
+            "executor/recipes.py",
+            "executor/rig.py",
+            "executor/__init__.py",
+            "executor/provision.py"
+          ],
+          "importsFiles": [
+            "executor/__init__.py",
+            "executor/provision.py",
+            "executor/recipes.py",
+            "executor/rig.py"
+          ],
+          "path": "executor/providers.py"
+        },
+        {
+          "exports": [
+            "compensate",
+            "plan",
+            "run"
+          ],
+          "failurePaths": [
+            {
+              "in": "_ledger_load",
+              "kind": "except",
+              "line": 55
+            },
+            {
+              "in": "_ledger_load",
+              "kind": "except",
+              "line": 62
+            },
+            {
+              "in": "_ledger_load",
+              "kind": "raise",
+              "line": 64
+            },
+            {
+              "in": "_sample_vram_gb",
+              "kind": "except",
+              "line": 166
+            },
+            {
+              "in": "_download",
+              "kind": "except",
+              "line": 237
+            },
+            {
+              "in": "_download",
+              "kind": "raise",
+              "line": 244
+            },
+            {
+              "in": "_download",
+              "kind": "except",
+              "line": 247
+            },
+            {
+              "in": "_download",
+              "kind": "except",
+              "line": 253
+            },
+            {
+              "in": "_download",
+              "kind": "raise",
+              "line": 255
+            },
+            {
+              "in": "_alive",
+              "kind": "except",
+              "line": 272
+            },
+            {
+              "in": "_exe_under",
+              "kind": "except",
+              "line": 310
+            },
+            {
+              "in": "_run_log",
+              "kind": "except",
+              "line": 389
+            },
+            {
+              "in": "run",
+              "kind": "raise",
+              "line": 412
+            },
+            {
+              "in": "run",
+              "kind": "raise",
+              "line": 416
+            },
+            {
+              "in": "run",
+              "kind": "except",
+              "line": 461
+            },
+            {
+              "in": "run",
+              "kind": "raise",
+              "line": 465
+            }
+          ],
+          "hash": "da2c886047c18238a2f07a5706666528c514c0b369f70cdbbed5b9d23e57e429",
+          "importOrder": [
+            "executor/recipes.py",
+            "executor/rig.py",
+            "executor/resolve.py",
+            "executor/__init__.py",
+            "executor/providers.py"
+          ],
+          "importsFiles": [
+            "executor/__init__.py",
+            "executor/providers.py",
+            "executor/recipes.py",
+            "executor/resolve.py",
+            "executor/rig.py"
+          ],
+          "path": "executor/provision.py"
+        },
+        {
+          "exports": [
+            "list_recipes",
+            "load_recipe"
+          ],
+          "failurePaths": [
+            {
+              "in": "_conn",
+              "kind": "raise",
+              "line": 53
+            }
+          ],
+          "hash": "289cb6473593f282d749c855978da1688d2b970fccc8b0795890a43696eebea6",
+          "path": "executor/recipes.py"
+        },
+        {
+          "entry": "resolve",
+          "entryRule": 3,
+          "exports": [
+            "resolve"
+          ],
+          "hash": "45cf685829b829f5f87085f3175771a68c8800a76729f39b26d06cea891f75d7",
+          "importsFiles": [
+            "executor/recipes.py",
+            "executor/rig.py"
+          ],
+          "path": "executor/resolve.py",
+          "sequences": [
+            {
+              "calls": [
+                {
+                  "line": 164,
+                  "name": "compat_band",
+                  "target": null
+                }
+              ],
+              "exported": true,
+              "invokedAtTopLevel": false,
+              "isDefaultExport": false,
+              "name": "resolve"
+            }
+          ]
+        },
+        {
+          "exports": [
+            "detect"
+          ],
+          "failurePaths": [
+            {
+              "in": "_parse_smi_query",
+              "kind": "except",
+              "line": 55
+            },
+            {
+              "in": "_nvidia_smi",
+              "kind": "except",
+              "line": 90
+            },
+            {
+              "in": "_cuda_toolkit",
+              "kind": "except",
+              "line": 103
+            },
+            {
+              "in": "_parse_wsl2_version",
+              "kind": "except",
+              "line": 142
+            },
+            {
+              "in": "_wsl2_version",
+              "kind": "except",
+              "line": 160
+            }
+          ],
+          "hash": "39a915ad6c68cd323bc46506963841f4e7f9cc3b1e7d379e1140129eef7cd451",
+          "path": "executor/rig.py"
+        }
+      ],
+      "globs": [
+        "executor/**"
+      ],
+      "importConfidence": "full",
+      "name": "executor",
+      "origin": "authored",
+      "outsidePlaces": [
+        {
+          "reads": 4,
+          "where": [
+            "caller"
+          ],
+          "writes": 12
+        }
+      ],
+      "outsideReads": 4,
+      "outsideWrites": 12,
+      "role": "code",
+      "testRunners": [
+        "unittest"
+      ],
+      "testedBy": 3,
+      "unresolvedSites": 0
+    },
+    {
+      "dynamicReads": 0,
+      "dynamicSpawns": 0,
+      "dynamicSpawnsInTests": 0,
+      "dynamicWrites": 0,
+      "entryPoints": [
+        "npm/bin/engine-room.mjs"
+      ],
+      "externals": 0,
+      "files": [
+        {
+          "hash": "43d28db52c05a8259b54a19f3db808621063964f39d0dedaf601aaddeb754c78",
+          "path": "npm/README.md"
+        },
+        {
+          "hash": "b6d1c93c4110da8c3d404be21191a7f51c2c706147ab10679c71b5cdbda67e25",
+          "path": "npm/bin/engine-room.mjs"
+        },
+        {
+          "hash": "3637fb313c43dc4f3147601fc3d892d95e205064eb5ba662449cf48e44cbc3cf",
+          "path": "npm/package.json"
+        }
+      ],
+      "globs": [
+        "npm/**"
+      ],
+      "importConfidence": "full",
+      "name": "npm",
+      "origin": "authored",
+      "role": "code",
+      "testedBy": 0,
+      "unresolvedSites": 0
+    },
+    {
+      "dynamicReads": 0,
+      "dynamicSpawns": 0,
+      "dynamicSpawnsInTests": 0,
+      "dynamicWrites": 0,
+      "entryPoints": [],
+      "externals": 0,
+      "files": [
+        {
+          "hash": "19dbd6f8a744cc5e91285a763ce1b13e74a68a74d59dabdcb77989ddca8eec99",
+          "path": ".gitignore"
+        },
+        {
+          "hash": "ed0c3b4aeecacfd4b18252b5672d9ad0eaa793cb21e1c6203f490dd39f59552c",
+          "path": "CHANGELOG.md"
+        },
+        {
+          "hash": "0d2190c7e837c9a86c3623904193401072fd4c05d87ff0300ad5407ce4b7060f",
+          "path": "CONTRIBUTING.md"
+        },
+        {
+          "hash": "367e5141e4f5884e5791c4021f33a9faa958840a5decf44e1b273a87aad1c459",
+          "path": "LICENSE"
+        },
+        {
+          "hash": "afc229ddbeae997d843b74d5b512e88031d810a1c35b1993055b8cac0ac1f026",
+          "path": "README.es.md"
+        },
+        {
+          "hash": "22a9be00ec0667c4cf57190a3dd9194406517711d0774cc41822ce8d74e69d0e",
+          "path": "README.fr.md"
+        },
+        {
+          "hash": "e8c2aac7db7d1a3e7cdf18fa26adb89c80933f11cebc0febf857e5f5f33a02f4",
+          "path": "README.hi.md"
+        },
+        {
+          "hash": "8752d23e7ea9daf4fbda437b68de8bc8d3d1c0dcd31532b392309b46a39f97e3",
+          "path": "README.it.md"
+        },
+        {
+          "hash": "81ed3a39eee04cda62f4a35052e92de7bf7c2ca858be20550bfe92338e58ef4f",
+          "path": "README.ja.md"
+        },
+        {
+          "hash": "8555ee41a4c583248049e3b5e076f369468f989430c45e2f57c378d76dc42e9c",
+          "path": "README.md"
+        },
+        {
+          "hash": "004e2eabfe94c5227e6bdcf431c7a510cbdf4a28261b795961302e0f92631e3c",
+          "path": "README.pt-BR.md"
+        },
+        {
+          "hash": "dad7b3442c03f164b93e3030a51f96f3c077fd679311683d8b86428331ba8aaf",
+          "path": "README.zh.md"
+        },
+        {
+          "hash": "2b3cde2ec3dc633791de2c3898d9c6e1347bf1e3c33733e9052fc9d1313dc141",
+          "path": "SCORECARD.md"
+        },
+        {
+          "hash": "fe8a423faeb0b3adc1514d942b32c608a4b4f8fb259841648f8abc47b5c67505",
+          "path": "SECURITY.md"
+        },
+        {
+          "hash": "aa389f60351a4c65acc5a75378a206cc529ae4a7b4d6e5f3fbf5a8b3532dc3ed",
+          "path": "SHIP_GATE.md"
+        },
+        {
+          "hash": "f7363ddb110057f6af63b605c2649902d32ce8d593151a8d28808f308fc78f47",
+          "path": "pyproject.toml"
+        },
+        {
+          "exports": [
+            "cli_help",
+            "import_smoke",
+            "main",
+            "run_tests"
+          ],
+          "failurePaths": [
+            {
+              "in": "import_smoke",
+              "kind": "except",
+              "line": 53
+            },
+            {
+              "in": "main",
+              "kind": "except",
+              "line": 91
+            },
+            {
+              "kind": "raise",
+              "line": 118
+            }
+          ],
+          "hash": "82050e6218583fa292d7f923707e634b828bef6e63168e2e266b75bf8e101adb",
+          "importsFiles": [
+            "executor/__init__.py"
+          ],
+          "path": "verify.py"
+        }
+      ],
+      "globs": [
+        "*"
+      ],
+      "importConfidence": "full",
+      "name": "root",
+      "origin": "authored",
+      "role": "config",
+      "testedBy": 0,
+      "unresolvedNamed": [
+        {
+          "path": "verify.py",
+          "specifier": null,
+          "why": "dynamic"
+        }
+      ],
+      "unresolvedSites": 1
+    },
+    {
+      "dynamicReads": 0,
+      "dynamicSpawns": 0,
+      "dynamicSpawnsInTests": 0,
+      "dynamicWrites": 0,
+      "entryPoints": [],
+      "externals": 0,
+      "files": [
+        {
+          "hash": "834fabd2439122e9c1b66768b49241347e1445a5393b6ec59ea3ab73b10b159e",
+          "path": "site/astro.config.mjs"
+        },
+        {
+          "hash": "af5d4f54dca60686724d306eb58759fb25b6f5ba4d66559ab84a968112a184e5",
+          "path": "site/package-lock.json"
+        },
+        {
+          "hash": "ede5fe47605b55555e8d3ed7b2eb904e0c9b03a975348882ae0a870ef5b98bb7",
+          "path": "site/package.json"
+        },
+        {
+          "hash": "1662fdb4c3ea8407f263ff36f5b0f05f12b8f2f5a963dc67bfa7177e2b023cbb",
+          "path": "site/src/assets/logo.png"
+        },
+        {
+          "constantOnly": true,
+          "hash": "ee756dfba4122d2acc94a39b2555d9f200fff56a87a8c0b10f9cd01df26a8b62",
+          "path": "site/src/content.config.ts"
+        },
+        {
+          "hash": "1fe0c881d5cb1db2506f251d7546c674dd06576b635d7610b699aeb43b53d00b",
+          "path": "site/src/content/docs/handbook/architecture.md"
+        },
+        {
+          "hash": "24ab027544096b87ae49d024fde2cf681a1826d2fbbc9d523cb51057cc47d9fd",
+          "path": "site/src/content/docs/handbook/getting-started.md"
+        },
+        {
+          "hash": "ea489c58c28c5812e49fcd6701165bcb4cff91a20cb0aa53fe3b69305d3435d9",
+          "path": "site/src/content/docs/handbook/index.md"
+        },
+        {
+          "hash": "9fea3d93c070118ea7e80c7571aec66e8c32314c098c4e2d00e911ad0c40c1ac",
+          "path": "site/src/content/docs/handbook/reference.md"
+        },
+        {
+          "hash": "33ed3320921e5e241d8452b165d5b47b813f068e3dd0a71b0ad6acd6796d1fa3",
+          "path": "site/src/content/docs/handbook/security.md"
+        },
+        {
+          "hash": "edd5eaeebbd221d58e8dac42d80f13c4049dcbc02e377fd1453259060c2d2fb5",
+          "path": "site/src/content/docs/handbook/usage.md"
+        },
+        {
+          "hash": "391533713539035d3c92282579d43de0f137067867fdb502d7eaea3c74601d2a",
+          "importOrder": [
+            "site/src/styles/global.css",
+            "site/src/site-config.ts"
+          ],
+          "importsFiles": [
+            "site/src/site-config.ts",
+            "site/src/styles/global.css"
+          ],
+          "path": "site/src/pages/index.astro"
+        },
+        {
+          "constantOnly": true,
+          "hash": "2134baa512c6da267678081f4b4f2811060e23c367204d7d5101074a8ecf254c",
+          "path": "site/src/site-config.ts"
+        },
+        {
+          "hash": "29ee8df91833e694bdba973126b34a6177de4cf01dab6d9ef7d3126e8e2b67fb",
+          "path": "site/src/styles/global.css"
+        },
+        {
+          "hash": "b17173f07c0db8b532533b5de48035355a12d9582f0918d75b12214b07d53a17",
+          "path": "site/src/styles/starlight-custom.css"
+        },
+        {
+          "hash": "b5b0a5b04a14cddd7713c5e1c82e86c79c17c2f86b170e26e9b170b3d5e01cd9",
+          "path": "site/tsconfig.json"
+        }
+      ],
+      "globs": [
+        "site/**"
+      ],
+      "importConfidence": "full",
+      "name": "site",
+      "origin": "authored",
+      "role": "site",
+      "testedBy": 0,
+      "unresolvedSites": 0
+    },
+    {
+      "dynamicReads": 0,
+      "dynamicSpawns": 0,
+      "dynamicSpawnsInTests": 0,
+      "dynamicWrites": 0,
+      "entryPoints": [],
+      "externals": 0,
+      "files": [
+        {
+          "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "noStatements": true,
+          "path": "tests/__init__.py"
+        },
+        {
+          "exports": [
+            "build_min_db",
+            "fake_rig"
+          ],
+          "hash": "d2012412c0d91829ea6ae895b5be97ad40dabfd3f36d99ac33b83858fe8fa59d",
+          "importsFiles": [
+            "executor/__init__.py",
+            "executor/rig.py"
+          ],
+          "path": "tests/_fixtures.py"
+        },
+        {
+          "hash": "e246ccdd6e9c213f2e40d25b813c64631bb42f56b241ca107ee2d6e25c07572f",
+          "importOrder": [
+            "tests/_fixtures.py",
+            "executor/__init__.py",
+            "executor/rig.py",
+            "executor/resolve.py",
+            "executor/recipes.py"
+          ],
+          "importsFiles": [
+            "executor/__init__.py",
+            "executor/recipes.py",
+            "executor/resolve.py",
+            "executor/rig.py",
+            "tests/_fixtures.py"
+          ],
+          "path": "tests/test_backend.py",
+          "testFramework": "unittest"
+        },
+        {
+          "hash": "fb21f3f4757fbd2d938cbd28b2232ae9d40f410d2b3c05f6e882d491819078bc",
+          "importOrder": [
+            "tests/_fixtures.py",
+            "executor/__init__.py",
+            "executor/provision.py",
+            "executor/providers.py",
+            "executor/cli.py",
+            "executor/recipes.py",
+            "executor/rig.py",
+            "executor/resolve.py"
+          ],
+          "importsFiles": [
+            "executor/__init__.py",
+            "executor/cli.py",
+            "executor/providers.py",
+            "executor/provision.py",
+            "executor/recipes.py",
+            "executor/resolve.py",
+            "executor/rig.py",
+            "tests/_fixtures.py"
+          ],
+          "path": "tests/test_provision.py",
+          "testFramework": "unittest"
+        }
+      ],
+      "globs": [
+        "tests/**"
+      ],
+      "importConfidence": "full",
+      "name": "tests",
+      "origin": "authored",
+      "role": "test",
+      "testRunners": [
+        "unittest"
+      ],
+      "testedBy": 0,
+      "unresolvedSites": 0
+    }
+  ],
+  "doors": [
+    {
+      "checksCount": 0,
+      "commands": [
+        {
+          "dir": "",
+          "job": "test",
+          "programs": [
+            "npx"
+          ],
+          "step": "Atlas check"
+        },
+        {
+          "dir": "",
+          "job": "test",
+          "programs": [
+            "python"
+          ],
+          "step": "Run the stdlib test suite"
+        },
+        {
+          "dir": "",
+          "job": "test",
+          "programs": [
+            "python"
+          ],
+          "step": "Dependency scan — assert the stdlib-only invariant (zero third-party deps)"
+        },
+        {
+          "dir": "",
+          "job": "test",
+          "programs": [
+            "pipx"
+          ],
+          "step": "Build wheel + sdist"
+        },
+        {
+          "dir": "",
+          "job": "test",
+          "programs": [
+            "ls"
+          ],
+          "step": "Show built artifacts"
+        }
+      ],
+      "elsewhere": [],
+      "file": ".github/workflows/ci.yml",
+      "jobs": [
+        {
+          "basis": "declared",
+          "name": "test",
+          "runsOn": [
+            {
+              "labels": [
+                "ubuntu-latest"
+              ],
+              "platform": {
+                "cpu": "x64",
+                "libc": "glibc",
+                "os": "linux"
+              }
+            }
+          ],
+          "setup": [
+            {
+              "ranges": [
+                {
+                  "from": "3.11",
+                  "range": ">=3.11.0 <3.12.0-0"
+                },
+                {
+                  "from": "3.12",
+                  "range": ">=3.12.0 <3.13.0-0"
+                }
+              ],
+              "step": "Set up Python ${{ matrix.python-version }}",
+              "uses": "actions/setup-python",
+              "version": "${{ matrix.python-version }}"
+            },
+            {
+              "ranges": [
+                {
+                  "from": "22",
+                  "range": ">=22.0.0 <23.0.0-0"
+                }
+              ],
+              "step": "Set up Node for Atlas",
+              "uses": "actions/setup-node",
+              "version": "22"
+            }
+          ]
+        }
+      ],
+      "landings": [],
+      "mentions": [
+        {
+          "job": "test",
+          "path": "pyproject.toml"
+        }
+      ],
+      "name": "CI",
+      "permissions": [],
+      "pushes": false,
+      "reach": [
+        {
+          "boundary": "tests",
+          "depth": 0,
+          "files": 4
+        },
+        {
+          "boundary": "executor",
+          "depth": 1,
+          "enters": {
+            "file": "executor/__init__.py",
+            "from": "tests/_fixtures.py"
+          },
+          "files": 7
+        }
+      ],
+      "readers": [],
+      "runs": [
+        {
+          "directory": true,
+          "job": "test",
+          "matched": true,
+          "path": "tests/",
+          "runKind": "executes",
+          "via": "unittest"
+        }
+      ],
+      "runsCount": 1,
+      "secrets": [],
+      "sends": {
+        "deploysPages": false,
+        "dispatchesTo": [],
+        "opensIssues": false,
+        "opensIssuesOnFailure": false,
+        "opensPullRequests": false,
+        "publishes": false,
+        "publishesTo": [],
+        "releases": false
+      },
+      "stages": [],
+      "tests": [
+        {
+          "files": 4,
+          "job": "test",
+          "runner": "unittest",
+          "step": "Run the stdlib test suite"
+        }
+      ],
+      "triggers": [
+        {
+          "event": "pull_request"
+        },
+        {
+          "event": "push",
+          "paths": [
+            ".github/workflows/**",
+            "atlas/**",
+            "executor/**",
+            "pyproject.toml",
+            "site/astro.config.mjs",
+            "site/package-lock.json",
+            "site/package.json",
+            "tests/**"
+          ]
+        },
+        {
+          "event": "workflow_dispatch"
+        }
+      ],
+      "uses": [
+        "actions/checkout",
+        "actions/setup-node",
+        "actions/setup-python"
+      ],
+      "usesWorkflowToken": false
+    },
+    {
+      "checksCount": 0,
+      "commands": [
+        {
+          "dir": "site",
+          "job": "build",
+          "programs": [
+            "npm"
+          ],
+          "step": "Install site dependencies"
+        },
+        {
+          "dir": "site",
+          "job": "build",
+          "programs": [
+            "npm"
+          ],
+          "step": "Build site"
+        }
+      ],
+      "elsewhere": [],
+      "file": ".github/workflows/pages.yml",
+      "jobs": [
+        {
+          "basis": "declared",
+          "name": "build",
+          "runsOn": [
+            {
+              "labels": [
+                "ubuntu-latest"
+              ],
+              "platform": {
+                "cpu": "x64",
+                "libc": "glibc",
+                "os": "linux"
+              }
+            }
+          ],
+          "setup": [
+            {
+              "ranges": [
+                {
+                  "from": "22",
+                  "range": ">=22.0.0 <23.0.0-0"
+                }
+              ],
+              "step": "1",
+              "uses": "actions/setup-node",
+              "version": "22"
+            }
+          ]
+        },
+        {
+          "basis": "declared",
+          "environment": {
+            "name": "github-pages"
+          },
+          "name": "deploy",
+          "runsOn": [
+            {
+              "labels": [
+                "ubuntu-latest"
+              ],
+              "platform": {
+                "cpu": "x64",
+                "libc": "glibc",
+                "os": "linux"
+              }
+            }
+          ]
+        }
+      ],
+      "landings": [],
+      "mentions": [],
+      "name": "Deploy site to GitHub Pages",
+      "permissions": [
+        "contents:read",
+        "id-token:write",
+        "pages:write"
+      ],
+      "pushes": false,
+      "reach": [
+        {
+          "boundary": "site",
+          "depth": 0,
+          "files": 5
+        }
+      ],
+      "readers": [],
+      "runs": [
+        {
+          "job": "build",
+          "matched": true,
+          "path": "site/astro.config.mjs",
+          "runKind": "executes",
+          "via": "astro build"
+        },
+        {
+          "directory": true,
+          "job": "build",
+          "matched": true,
+          "path": "site/src/",
+          "runKind": "executes",
+          "via": "astro build"
+        }
+      ],
+      "runsCount": 2,
+      "secrets": [],
+      "sends": {
+        "deploysPages": true,
+        "dispatchesTo": [],
+        "opensIssues": false,
+        "opensIssuesOnFailure": false,
+        "opensPullRequests": false,
+        "publishes": false,
+        "publishesTo": [],
+        "releases": false
+      },
+      "stages": [],
+      "triggers": [
+        {
+          "branches": [
+            "main"
+          ],
+          "event": "push",
+          "paths": [
+            ".github/workflows/pages.yml",
+            "site/**"
+          ]
+        },
+        {
+          "event": "workflow_dispatch"
+        }
+      ],
+      "uses": [
+        "actions/checkout",
+        "actions/deploy-pages",
+        "actions/setup-node",
+        "actions/upload-pages-artifact"
+      ],
+      "usesWorkflowToken": false
+    },
+    {
+      "checksCount": 1,
+      "commands": [
+        {
+          "dir": "npm",
+          "job": "release",
+          "programs": [
+            "echo",
+            "mkdir",
+            "npm",
+            "popd",
+            "pushd"
+          ],
+          "step": "Install npm >=11.5 in sandbox for OIDC trusted-publishing auth"
+        },
+        {
+          "dir": "npm",
+          "job": "release",
+          "programs": [
+            "echo",
+            "node"
+          ],
+          "step": "Verify tag matches package.json version"
+        },
+        {
+          "dir": "npm",
+          "job": "release",
+          "programs": [
+            "node"
+          ],
+          "step": "Smoke-check the wrapper"
+        },
+        {
+          "dir": "npm",
+          "job": "release",
+          "programs": [
+            "npm"
+          ],
+          "step": "npm pack dry-run (verify shape)"
+        },
+        {
+          "dir": "npm",
+          "job": "release",
+          "programs": [
+            "npm"
+          ],
+          "step": "Publish to npm with provenance (OIDC trusted publisher)"
+        },
+        {
+          "dir": "npm",
+          "job": "release",
+          "programs": [
+            "gh"
+          ],
+          "step": "Create GitHub Release"
+        }
+      ],
+      "elsewhere": [],
+      "file": ".github/workflows/release.yml",
+      "gated": [
+        {
+          "jobs": [
+            "release"
+          ],
+          "pushes": false,
+          "sends": [
+            "releases"
+          ],
+          "stages": [],
+          "when": {
+            "event": "push",
+            "tags": true
+          }
+        }
+      ],
+      "jobs": [
+        {
+          "basis": "declared",
+          "name": "release",
+          "runsOn": [
+            {
+              "labels": [
+                "ubuntu-latest"
+              ],
+              "platform": {
+                "cpu": "x64",
+                "libc": "glibc",
+                "os": "linux"
+              }
+            }
+          ],
+          "setup": [
+            {
+              "ranges": [
+                {
+                  "from": "22",
+                  "range": ">=22.0.0 <23.0.0-0"
+                }
+              ],
+              "step": "Setup Node",
+              "uses": "actions/setup-node",
+              "version": "22"
+            }
+          ]
+        }
+      ],
+      "landings": [],
+      "mentions": [
+        {
+          "job": "release",
+          "path": "npm/package.json"
+        }
+      ],
+      "name": "Release",
+      "permissions": [
+        "contents:write",
+        "id-token:write"
+      ],
+      "pushes": false,
+      "reach": [
+        {
+          "boundary": "npm",
+          "depth": 0,
+          "files": 1
+        }
+      ],
+      "readers": [],
+      "runs": [
+        {
+          "job": "release",
+          "path": "npm/bin/engine-room.mjs",
+          "runKind": "checks"
+        }
+      ],
+      "runsCount": 1,
+      "secrets": [
+        "GITHUB_TOKEN"
+      ],
+      "sends": {
+        "deploysPages": false,
+        "dispatchesTo": [],
+        "opensIssues": false,
+        "opensIssuesOnFailure": false,
+        "opensPullRequests": false,
+        "packages": [
+          {
+            "dir": "npm",
+            "name": "@mcptoolshop/engine-room",
+            "registry": "npm"
+          }
+        ],
+        "publishes": true,
+        "publishesTo": [
+          "npm"
+        ],
+        "releases": false
+      },
+      "stages": [],
+      "triggers": [
+        {
+          "event": "push",
+          "tags": [
+            "v*"
+          ]
+        },
+        {
+          "event": "workflow_dispatch"
+        }
+      ],
+      "uses": [
+        "actions/checkout",
+        "actions/setup-node"
+      ],
+      "usesWorkflowToken": true
+    },
+    {
+      "checksCount": 0,
+      "commands": [],
+      "elsewhere": [],
+      "file": "npm/package.json",
+      "kind": "command",
+      "landings": [],
+      "mentions": [],
+      "name": "engine-room",
+      "permissions": [],
+      "pushes": false,
+      "reach": [
+        {
+          "boundary": "npm",
+          "depth": 0,
+          "files": 1
+        }
+      ],
+      "readers": [],
+      "runs": [
+        {
+          "path": "npm/bin/engine-room.mjs",
+          "runKind": "executes"
+        }
+      ],
+      "runsCount": 1,
+      "secrets": [],
+      "sends": {
+        "deploysPages": false,
+        "dispatchesTo": [],
+        "opensIssues": false,
+        "opensIssuesOnFailure": false,
+        "opensPullRequests": false,
+        "publishes": false,
+        "publishesTo": [],
+        "releases": false
+      },
+      "stages": [],
+      "triggers": [],
+      "uses": [],
+      "usesWorkflowToken": false
+    },
+    {
+      "checksCount": 0,
+      "commands": [],
+      "elsewhere": [],
+      "file": "pyproject.toml",
+      "kind": "command",
+      "landings": [],
+      "mentions": [],
+      "name": "er",
+      "permissions": [],
+      "pushes": false,
+      "reach": [
+        {
+          "boundary": "executor",
+          "depth": 0,
+          "files": 7
+        }
+      ],
+      "readers": [],
+      "runs": [
+        {
+          "path": "executor/cli.py",
+          "runKind": "executes"
+        }
+      ],
+      "runsCount": 1,
+      "secrets": [],
+      "sends": {
+        "deploysPages": false,
+        "dispatchesTo": [],
+        "opensIssues": false,
+        "opensIssuesOnFailure": false,
+        "opensPullRequests": false,
+        "publishes": false,
+        "publishesTo": [],
+        "releases": false
+      },
+      "stages": [],
+      "triggers": [],
+      "uses": [],
+      "usesWorkflowToken": false
+    }
+  ],
+  "edges": [
+    {
+      "from": "root",
+      "kind": "file",
+      "to": "executor"
+    },
+    {
+      "from": "root",
+      "kind": "spawns",
+      "to": "executor"
+    },
+    {
+      "from": "tests",
+      "fromTests": true,
+      "kind": "file",
+      "to": "executor"
+    }
+  ],
+  "engine": "1.24.0",
+  "generatedFrom": {
+    "commit": "d11ed2bc6bf061f461163c778902d5e0d722c17c",
+    "tracked": 74
+  },
+  "landings": [
+    {
+      "readers": [
+        {
+          "by": "app/build.mjs",
+          "call": "readFileSync",
+          "confidence": "ast"
+        }
+      ],
+      "target": "app",
+      "writers": []
+    },
+    {
+      "readers": [
+        {
+          "by": "app/index.html",
+          "call": "script",
+          "confidence": "ast"
+        }
+      ],
+      "target": "app/data.js",
+      "writers": []
+    },
+    {
+      "readers": [],
+      "target": "app/dist/control-panel.html",
+      "writers": [
+        {
+          "by": "app/build.mjs",
+          "confidence": "ast"
+        }
+      ]
+    },
+    {
+      "readers": [
+        {
+          "by": "app/index.html",
+          "call": "script",
+          "confidence": "ast"
+        }
+      ],
+      "target": "app/engine.js",
+      "writers": []
+    },
+    {
+      "readers": [],
+      "target": "app/screenshots/*-catalog-dark.png",
+      "writers": [
+        {
+          "by": "app/screenshots/capture.mjs",
+          "confidence": "ast"
+        }
+      ]
+    },
+    {
+      "readers": [
+        {
+          "by": "app/index.html",
+          "call": "stylesheet",
+          "confidence": "ast"
+        }
+      ],
+      "target": "app/styles.css",
+      "writers": []
+    },
+    {
+      "readers": [
+        {
+          "by": "app/index.html",
+          "call": "script",
+          "confidence": "ast"
+        }
+      ],
+      "target": "app/ui.js",
+      "writers": []
+    },
+    {
+      "readers": [
+        {
+          "by": ".github/workflows/release.yml",
+          "confidence": "config"
+        }
+      ],
+      "target": "npm/package.json",
+      "writers": []
+    },
+    {
+      "readers": [
+        {
+          "by": ".github/workflows/ci.yml",
+          "confidence": "config"
+        }
+      ],
+      "target": "pyproject.toml",
+      "writers": []
+    },
+    {
+      "readers": [
+        {
+          "by": "site/astro.config.mjs",
+          "call": "content-collection",
+          "confidence": "ast"
+        }
+      ],
+      "target": "site/src/content/docs",
+      "writers": []
+    },
+    {
+      "readers": [
+        {
+          "by": "site/astro.config.mjs",
+          "call": "autogenerate",
+          "confidence": "ast"
+        }
+      ],
+      "target": "site/src/content/docs/handbook",
+      "writers": []
+    }
+  ],
+  "overlaps": [],
+  "submodules": [],
+  "symlinks": [],
+  "testFiles": 4,
+  "unassigned": []
+}
