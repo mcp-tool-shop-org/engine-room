@@ -1,0 +1,628 @@
+{
+  "authorship": {
+    "parts": [],
+    "places": []
+  },
+  "boundaries": [
+    {
+      "breakage": {
+        "coChangesOnly": [],
+        "collapsed": false,
+        "confidence": "low",
+        "importsAndCoChanges": [],
+        "importsOnly": []
+      },
+      "cohesion": null,
+      "cohesionDropped": false,
+      "confidence": "low",
+      "highWater": null,
+      "name": ".github",
+      "qualifyingSourceCommits": 0,
+      "rebaseline": null
+    },
+    {
+      "breakage": {
+        "coChangesOnly": [],
+        "collapsed": false,
+        "confidence": "low",
+        "importsAndCoChanges": [],
+        "importsOnly": []
+      },
+      "cohesion": null,
+      "cohesionDropped": false,
+      "confidence": "low",
+      "highWater": null,
+      "name": "app",
+      "qualifyingSourceCommits": 3,
+      "rebaseline": null
+    },
+    {
+      "breakage": {
+        "coChangesOnly": [],
+        "collapsed": false,
+        "confidence": "low",
+        "importsAndCoChanges": [],
+        "importsOnly": []
+      },
+      "cohesion": null,
+      "cohesionDropped": false,
+      "confidence": "low",
+      "highWater": null,
+      "name": "design",
+      "qualifyingSourceCommits": 0,
+      "rebaseline": null
+    },
+    {
+      "breakage": {
+        "coChangesOnly": [],
+        "collapsed": false,
+        "confidence": "low",
+        "importsAndCoChanges": [],
+        "importsOnly": [
+          "root",
+          "tests"
+        ]
+      },
+      "cohesion": null,
+      "cohesionDropped": false,
+      "confidence": "low",
+      "highWater": null,
+      "name": "executor",
+      "qualifyingSourceCommits": 5,
+      "rebaseline": null
+    },
+    {
+      "breakage": {
+        "coChangesOnly": [],
+        "collapsed": false,
+        "confidence": "low",
+        "importsAndCoChanges": [],
+        "importsOnly": []
+      },
+      "cohesion": null,
+      "cohesionDropped": false,
+      "confidence": "low",
+      "highWater": null,
+      "name": "npm",
+      "qualifyingSourceCommits": 1,
+      "rebaseline": null
+    },
+    {
+      "breakage": {
+        "coChangesOnly": [],
+        "collapsed": false,
+        "confidence": "low",
+        "importsAndCoChanges": [],
+        "importsOnly": []
+      },
+      "cohesion": null,
+      "cohesionDropped": false,
+      "confidence": "low",
+      "highWater": null,
+      "name": "root",
+      "qualifyingSourceCommits": 1,
+      "rebaseline": null
+    },
+    {
+      "breakage": {
+        "coChangesOnly": [],
+        "collapsed": false,
+        "confidence": "low",
+        "importsAndCoChanges": [],
+        "importsOnly": []
+      },
+      "cohesion": null,
+      "cohesionDropped": false,
+      "confidence": "low",
+      "highWater": null,
+      "name": "site",
+      "qualifyingSourceCommits": 1,
+      "rebaseline": null
+    },
+    {
+      "breakage": {
+        "coChangesOnly": [],
+        "collapsed": false,
+        "confidence": "low",
+        "importsAndCoChanges": [],
+        "importsOnly": []
+      },
+      "cohesion": null,
+      "cohesionDropped": false,
+      "confidence": "low",
+      "highWater": null,
+      "name": "tests",
+      "qualifyingSourceCommits": 2,
+      "rebaseline": null
+    }
+  ],
+  "churn": {
+    "definition": "commits is how many commits in the window touch the file, including merges and commits dropped from coupling. lines is added plus deleted in those commits.",
+    "files": [
+      {
+        "commits": 6,
+        "lines": 94,
+        "path": ".github/workflows/ci.yml"
+      },
+      {
+        "commits": 2,
+        "lines": 56,
+        "path": ".github/workflows/pages.yml"
+      },
+      {
+        "commits": 2,
+        "lines": 82,
+        "path": ".github/workflows/release.yml"
+      },
+      {
+        "commits": 3,
+        "lines": 21,
+        "path": ".gitignore"
+      },
+      {
+        "commits": 1,
+        "lines": 91,
+        "path": "CHANGELOG.md"
+      },
+      {
+        "commits": 1,
+        "lines": 120,
+        "path": "CONTRIBUTING.md"
+      },
+      {
+        "commits": 1,
+        "lines": 21,
+        "path": "LICENSE"
+      },
+      {
+        "commits": 1,
+        "lines": 89,
+        "path": "README.es.md"
+      },
+      {
+        "commits": 1,
+        "lines": 90,
+        "path": "README.fr.md"
+      },
+      {
+        "commits": 1,
+        "lines": 89,
+        "path": "README.hi.md"
+      },
+      {
+        "commits": 1,
+        "lines": 89,
+        "path": "README.it.md"
+      },
+      {
+        "commits": 1,
+        "lines": 89,
+        "path": "README.ja.md"
+      },
+      {
+        "commits": 5,
+        "lines": 144,
+        "path": "README.md"
+      },
+      {
+        "commits": 1,
+        "lines": 89,
+        "path": "README.pt-BR.md"
+      },
+      {
+        "commits": 1,
+        "lines": 90,
+        "path": "README.zh.md"
+      },
+      {
+        "commits": 2,
+        "lines": 50,
+        "path": "SCORECARD.md"
+      },
+      {
+        "commits": 3,
+        "lines": 79,
+        "path": "SECURITY.md"
+      },
+      {
+        "commits": 2,
+        "lines": 91,
+        "path": "SHIP_GATE.md"
+      },
+      {
+        "commits": 2,
+        "lines": 47,
+        "path": "app/README.md"
+      },
+      {
+        "commits": 1,
+        "lines": 36,
+        "path": "app/build.mjs"
+      },
+      {
+        "commits": 2,
+        "lines": 370,
+        "path": "app/data.js"
+      },
+      {
+        "commits": 4,
+        "lines": 2414,
+        "path": "app/dist/control-panel.html"
+      },
+      {
+        "commits": 3,
+        "lines": 580,
+        "path": "app/engine.js"
+      },
+      {
+        "commits": 2,
+        "lines": 98,
+        "path": "app/index.html"
+      },
+      {
+        "commits": 1,
+        "lines": 0,
+        "path": "app/logo.png"
+      },
+      {
+        "commits": 1,
+        "lines": 0,
+        "path": "app/screenshots/01-catalog-dark.png"
+      },
+      {
+        "commits": 2,
+        "lines": 0,
+        "path": "app/screenshots/01-catalog.png"
+      },
+      {
+        "commits": 1,
+        "lines": 0,
+        "path": "app/screenshots/02-catalog-light.png"
+      },
+      {
+        "commits": 2,
+        "lines": 0,
+        "path": "app/screenshots/02-server-ready.png"
+      },
+      {
+        "commits": 1,
+        "lines": 0,
+        "path": "app/screenshots/03-offline-readonly.png"
+      },
+      {
+        "commits": 2,
+        "lines": 0,
+        "path": "app/screenshots/03-producer.png"
+      },
+      {
+        "commits": 1,
+        "lines": 0,
+        "path": "app/screenshots/04-detail-server.png"
+      },
+      {
+        "commits": 2,
+        "lines": 0,
+        "path": "app/screenshots/04-modifier.png"
+      },
+      {
+        "commits": 2,
+        "lines": 0,
+        "path": "app/screenshots/05-router.png"
+      },
+      {
+        "commits": 1,
+        "lines": 0,
+        "path": "app/screenshots/05-server-running.png"
+      },
+      {
+        "commits": 1,
+        "lines": 0,
+        "path": "app/screenshots/06-detail-producer.png"
+      },
+      {
+        "commits": 2,
+        "lines": 0,
+        "path": "app/screenshots/06-human-gate.png"
+      },
+      {
+        "commits": 2,
+        "lines": 0,
+        "path": "app/screenshots/07-andon-halt.png"
+      },
+      {
+        "commits": 1,
+        "lines": 0,
+        "path": "app/screenshots/07-detail-modifier.png"
+      },
+      {
+        "commits": 1,
+        "lines": 0,
+        "path": "app/screenshots/08-detail-router.png"
+      },
+      {
+        "commits": 1,
+        "lines": 0,
+        "path": "app/screenshots/09-andon-halt.png"
+      },
+      {
+        "commits": 1,
+        "lines": 0,
+        "path": "app/screenshots/10-empty-search.png"
+      },
+      {
+        "commits": 2,
+        "lines": 95,
+        "path": "app/screenshots/README.md"
+      },
+      {
+        "commits": 1,
+        "lines": 123,
+        "path": "app/screenshots/capture.mjs"
+      },
+      {
+        "commits": 3,
+        "lines": 515,
+        "path": "app/styles.css"
+      },
+      {
+        "commits": 4,
+        "lines": 629,
+        "path": "app/ui.js"
+      },
+      {
+        "commits": 1,
+        "lines": 127,
+        "path": "design/data-contract.md"
+      },
+      {
+        "commits": 1,
+        "lines": 118,
+        "path": "design/ui-control-panel.claude-design-brief.md"
+      },
+      {
+        "commits": 3,
+        "lines": 132,
+        "path": "executor/README.md"
+      },
+      {
+        "commits": 2,
+        "lines": 4,
+        "path": "executor/__init__.py"
+      },
+      {
+        "commits": 2,
+        "lines": 0,
+        "path": "executor/__pycache__/__init__.cpython-314.pyc"
+      },
+      {
+        "commits": 2,
+        "lines": 0,
+        "path": "executor/__pycache__/cli.cpython-314.pyc"
+      },
+      {
+        "commits": 2,
+        "lines": 0,
+        "path": "executor/__pycache__/providers.cpython-314.pyc"
+      },
+      {
+        "commits": 2,
+        "lines": 0,
+        "path": "executor/__pycache__/recipes.cpython-314.pyc"
+      },
+      {
+        "commits": 2,
+        "lines": 0,
+        "path": "executor/__pycache__/resolve.cpython-314.pyc"
+      },
+      {
+        "commits": 2,
+        "lines": 0,
+        "path": "executor/__pycache__/rig.cpython-314.pyc"
+      },
+      {
+        "commits": 3,
+        "lines": 194,
+        "path": "executor/cli.py"
+      },
+      {
+        "commits": 2,
+        "lines": 327,
+        "path": "executor/providers.py"
+      },
+      {
+        "commits": 3,
+        "lines": 709,
+        "path": "executor/provision.py"
+      },
+      {
+        "commits": 1,
+        "lines": 88,
+        "path": "executor/recipes.py"
+      },
+      {
+        "commits": 3,
+        "lines": 297,
+        "path": "executor/resolve.py"
+      },
+      {
+        "commits": 3,
+        "lines": 208,
+        "path": "executor/rig.py"
+      },
+      {
+        "commits": 1,
+        "lines": 48,
+        "path": "npm/README.md"
+      },
+      {
+        "commits": 1,
+        "lines": 33,
+        "path": "npm/bin/engine-room.mjs"
+      },
+      {
+        "commits": 1,
+        "lines": 25,
+        "path": "npm/package.json"
+      },
+      {
+        "commits": 2,
+        "lines": 18,
+        "path": "pyproject.toml"
+      },
+      {
+        "commits": 2,
+        "lines": 41,
+        "path": "site/astro.config.mjs"
+      },
+      {
+        "commits": 2,
+        "lines": 13810,
+        "path": "site/package-lock.json"
+      },
+      {
+        "commits": 2,
+        "lines": 24,
+        "path": "site/package.json"
+      },
+      {
+        "commits": 1,
+        "lines": 0,
+        "path": "site/src/assets/logo.png"
+      },
+      {
+        "commits": 1,
+        "lines": 7,
+        "path": "site/src/content.config.ts"
+      },
+      {
+        "commits": 1,
+        "lines": 168,
+        "path": "site/src/content/docs/handbook/architecture.md"
+      },
+      {
+        "commits": 1,
+        "lines": 135,
+        "path": "site/src/content/docs/handbook/getting-started.md"
+      },
+      {
+        "commits": 1,
+        "lines": 78,
+        "path": "site/src/content/docs/handbook/index.md"
+      },
+      {
+        "commits": 1,
+        "lines": 157,
+        "path": "site/src/content/docs/handbook/reference.md"
+      },
+      {
+        "commits": 1,
+        "lines": 91,
+        "path": "site/src/content/docs/handbook/security.md"
+      },
+      {
+        "commits": 1,
+        "lines": 209,
+        "path": "site/src/content/docs/handbook/usage.md"
+      },
+      {
+        "commits": 1,
+        "lines": 33,
+        "path": "site/src/pages/index.astro"
+      },
+      {
+        "commits": 1,
+        "lines": 81,
+        "path": "site/src/site-config.ts"
+      },
+      {
+        "commits": 1,
+        "lines": 3,
+        "path": "site/src/styles/global.css"
+      },
+      {
+        "commits": 1,
+        "lines": 5,
+        "path": "site/src/styles/starlight-custom.css"
+      },
+      {
+        "commits": 1,
+        "lines": 5,
+        "path": "site/tsconfig.json"
+      },
+      {
+        "commits": 1,
+        "lines": 0,
+        "path": "tests/__init__.py"
+      },
+      {
+        "commits": 2,
+        "lines": 168,
+        "path": "tests/_fixtures.py"
+      },
+      {
+        "commits": 2,
+        "lines": 397,
+        "path": "tests/test_backend.py"
+      },
+      {
+        "commits": 2,
+        "lines": 1262,
+        "path": "tests/test_provision.py"
+      },
+      {
+        "commits": 1,
+        "lines": 118,
+        "path": "verify.py"
+      }
+    ]
+  },
+  "confidence": {
+    "level": "low",
+    "reason": "fewer than 30 qualifying commits in the window, and fewer than 20 source files reach 10 revisions"
+  },
+  "generatedAt": "2026-10-01T02:57:02.154Z",
+  "generatedFrom": {
+    "commit": "d11ed2bc6bf061f461163c778902d5e0d722c17c"
+  },
+  "pairs": [],
+  "parameters": {
+    "appliedChangesetLimit": 19.75,
+    "changeset": 50,
+    "changesetFraction": 0.25,
+    "cohesionDrop": 0.2,
+    "couplingPopulation": "source",
+    "fallenShared": 3,
+    "floor": "fallen",
+    "floorHeld": false,
+    "floorTrigger": "both",
+    "headDate": "2026-09-30T19:31:45-07:00",
+    "inScopeFiles": 79,
+    "pinnedStart": null,
+    "priorFloor": null,
+    "qualifyingCommits": 16,
+    "qualifyingMinimum": 30,
+    "revisions": 5,
+    "shared": 10,
+    "sharedFloorUsed": 3,
+    "since": "2026-04-04T02:31:45.000Z",
+    "sourceExtensions": [
+      ".js",
+      ".mjs",
+      ".cjs",
+      ".jsx",
+      ".ts",
+      ".tsx",
+      ".mts",
+      ".cts",
+      ".py",
+      ".rs",
+      ".gd"
+    ],
+    "sourceFileReach": 20,
+    "sourceFileRise": 25,
+    "sourceFilesReachingStrongFloor": 0,
+    "strength": 0.5,
+    "windowDays": 180
+  },
+  "strengthDefinition": "strength is the shared qualifying commits divided by either. either is the number of qualifying commits that touch either file."
+}
