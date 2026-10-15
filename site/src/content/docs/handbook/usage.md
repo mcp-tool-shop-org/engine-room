@@ -96,7 +96,7 @@ the plan and touches nothing.** Every side-effecting step is flagged `!` and sho
 ```
 $ er provision <slug>
 recipe   <slug>  (launchable-server / native-win-compile)
-instance bfd41f71595c84d8   dir C:\Users\you\.engine-room\instances\<slug>-bfd41f71595c84d8
+instance bfd41f71595c84d8   dir C:\Users\<user>\.engine-room\instances\<slug>-bfd41f71595c84d8
 
 PLAN (DRY-RUN):
    1.! [prepare   ] create per-instance dir
