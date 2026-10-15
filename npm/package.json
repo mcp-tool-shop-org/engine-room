@@ -1,6 +1,6 @@
 {
   "name": "@mcptoolshop/engine-room",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Recipe-driven provisioner for local AI engines — the er CLI. npx discovery wrapper for the stdlib-only Python tool.",
   "type": "module",
   "bin": {

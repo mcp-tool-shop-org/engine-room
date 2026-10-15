@@ -60,7 +60,7 @@
           "path": "app/data.js"
         },
         {
-          "hash": "2da098e3f31f7f14fb49a8d542d9c229f4245b34f3a87866b2ef117aebff4fde",
+          "hash": "9d946b313d9a88cc72e3471392c551fa6358fb9d378759a683bc2c6536e79bb8",
           "path": "app/dist/control-panel.html"
         },
         {
@@ -156,7 +156,7 @@
               "line": 519
             }
           ],
-          "hash": "db9fc6f681d1c55c88f2cfddc9381579b50cf77994af1662b3ad55396a6c13ee",
+          "hash": "4229345a17c79f7ac6daf64de7eb08749304e70b2529e726ff2cdb7c1d9c9f25",
           "path": "app/ui.js"
         }
       ],
@@ -224,7 +224,7 @@
         },
         {
           "constantOnly": true,
-          "hash": "58c89d570ba7c61588b240827f92f75b8ab1a3c7d350ed25a9e4019fa0b270e7",
+          "hash": "84897958a756ffe9583fe9d99e788d4f7a9b78a2e4e82db8417ba5002fdc3f0c",
           "path": "executor/__init__.py"
         },
         {
@@ -765,7 +765,7 @@
           "path": "npm/bin/engine-room.mjs"
         },
         {
-          "hash": "3637fb313c43dc4f3147601fc3d892d95e205064eb5ba662449cf48e44cbc3cf",
+          "hash": "5df6e5ab2e9d190252ac5382c35fece05d27c57d4f5123ec14ee9ce67509e0c6",
           "path": "npm/package.json"
         }
       ],
@@ -792,7 +792,7 @@
           "path": ".gitignore"
         },
         {
-          "hash": "ed0c3b4aeecacfd4b18252b5672d9ad0eaa793cb21e1c6203f490dd39f59552c",
+          "hash": "e8441461c9bfe925d3eb7877340893833fc160dae4ea0b8fcb616d0cad4f6cc7",
           "path": "CHANGELOG.md"
         },
         {
@@ -836,7 +836,7 @@
           "path": "README.zh.md"
         },
         {
-          "hash": "2b3cde2ec3dc633791de2c3898d9c6e1347bf1e3c33733e9052fc9d1313dc141",
+          "hash": "2ede938191ab2c6143bad8ff2bbb1d731f11fa5ebbe00c2ecb4e62232f5c440a",
           "path": "SCORECARD.md"
         },
         {
@@ -848,7 +848,7 @@
           "path": "SHIP_GATE.md"
         },
         {
-          "hash": "f7363ddb110057f6af63b605c2649902d32ce8d593151a8d28808f308fc78f47",
+          "hash": "55d3e68b7f0e20f8db981240581e240b0b9085c366b2abaa25c726db149f2a55",
           "path": "pyproject.toml"
         },
         {
@@ -911,7 +911,7 @@
           "path": "site/astro.config.mjs"
         },
         {
-          "hash": "af5d4f54dca60686724d306eb58759fb25b6f5ba4d66559ab84a968112a184e5",
+          "hash": "0607a19c4f60b635244a906c7ad2424359b50e20c4a83bc140f202abce4a941e",
           "path": "site/package-lock.json"
         },
         {
@@ -948,7 +948,7 @@
           "path": "site/src/content/docs/handbook/security.md"
         },
         {
-          "hash": "edd5eaeebbd221d58e8dac42d80f13c4049dcbc02e377fd1453259060c2d2fb5",
+          "hash": "c24ef0566c436ea6c594e68e7147c101648eb560041ac4fc9d6351886a96997a",
           "path": "site/src/content/docs/handbook/usage.md"
         },
         {
@@ -1676,7 +1676,7 @@
   ],
   "engine": "1.24.0",
   "generatedFrom": {
-    "commit": "d11ed2bc6bf061f461163c778902d5e0d722c17c",
+    "commit": "917a66211c6bcd2ba060aef493f246c2bc952985",
     "tracked": 74
   },
   "landings": [

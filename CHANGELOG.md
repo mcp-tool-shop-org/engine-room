@@ -13,6 +13,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Fixed
 
+## [1.0.1] - 2026-10-14
+
+### Fixed
+
+- **The control panel's step ledger no longer calls a string replace that does nothing.** `app/ui.js` called `ICON.check.replace('24 24','24 24')`, which swaps a string for itself (CodeQL `js/identity-replacement`, two alerts: the source and the built page). The call is removed and `app/dist/control-panel.html` is rebuilt with `node app/build.mjs`; the page is unchanged.
+
 ## [1.0.0] - 2026-06-09
 
 First public release of the `er` executor — the action half of the recipe-driven

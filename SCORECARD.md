@@ -5,7 +5,7 @@
 **Repo:** engine-room
 **Date:** 2026-06-09
 **Type tags:** `[pypi]` `[cli]` (stdlib-only Python; not npm/mcp/vsix/desktop)
-**Version:** 1.0.0 · **Tests:** 97 (stdlib `unittest`, all passing)
+**Version:** 1.0.1 · **Tests:** 97 (stdlib `unittest`, all passing)
 
 ## Hard gates (A–D) — block release
 
