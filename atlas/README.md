@@ -1,14 +1,14 @@
 # engine-room: how it works
 
-Mapped at 2026-10-01 from commit d11ed2b by Atlas 1.24.0.
+Mapped at 2026-10-15 from commit 917a662 by Atlas 1.24.0.
 
 ## What this is
 
 8 parts, in Python (12 files), JavaScript (7 files), CSS (3 files), HTML (2 files), TypeScript (2 files) and Astro (1 file). Work enters through 5 doors; the busiest is CI, which reaches 2 parts. It publishes @mcptoolshop/engine-room to npm. It deploys a site to GitHub Pages. People run engine-room and er.
 
-## What changed since the last map
+## What changed since 2026-10-01 (d11ed2b)
 
-This is the first map.
+Nothing structural changed since 2026-10-01; 9 files changed content.
 
 ## What comes in
 
@@ -85,6 +85,6 @@ Read those in order to follow one run of er end to end. This path follows er (a 
 - 2 writes use paths built at run time and are not named here.
 - 13 writes and 5 reads go to a path their caller passes, not to this repository.
 - 1 command is built at run time and not followed.
-- Statistics confidence is low: fewer than 30 qualifying commits in the window, and fewer than 20 source files reach 10 revisions.
+- Statistics confidence is low: fewer than 30 qualifying commits in the window, and fewer than 25 source files reach 10 revisions.
 
 Regenerate with `npx --yes @dogfood-lab/atlas map`.

@@ -1679,7 +1679,7 @@ function ledgerRows(inst, teardown) {
     }
     return `<div class="comp-row">
       <div class="comp-top"><span class="comp-label">${esc(c.label)}</span>${c.human_gated ? '<span class="comp-gate">human-gated</span>' : ''}
-        ${running === 'active' ? '<span class="btn-spin spin" style="width:13px;height:13px;border-color:var(--cyan);border-right-color:transparent;margin-left:auto"></span>' : running === 'done' ? '<span style="margin-left:auto;color:var(--accent)">'+ICON.check.replace('24 24','24 24')+'</span>' : ''}</div>
+        ${running === 'active' ? '<span class="btn-spin spin" style="width:13px;height:13px;border-color:var(--cyan);border-right-color:transparent;margin-left:auto"></span>' : running === 'done' ? '<span style="margin-left:auto;color:var(--accent)">'+ICON.check+'</span>' : ''}</div>
       <div class="comp-cmd mono">$ ${esc(c.cmd)}</div>
       <div class="comp-post">post-state: <b>${esc(c.postState)}</b></div>
     </div>`;

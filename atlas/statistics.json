@@ -140,8 +140,8 @@
     "definition": "commits is how many commits in the window touch the file, including merges and commits dropped from coupling. lines is added plus deleted in those commits.",
     "files": [
       {
-        "commits": 6,
-        "lines": 94,
+        "commits": 8,
+        "lines": 116,
         "path": ".github/workflows/ci.yml"
       },
       {
@@ -370,6 +370,31 @@
         "path": "app/ui.js"
       },
       {
+        "commits": 2,
+        "lines": 180,
+        "path": "atlas/README.md"
+      },
+      {
+        "commits": 2,
+        "lines": 68,
+        "path": "atlas/boundaries.yaml"
+      },
+      {
+        "commits": 2,
+        "lines": 568,
+        "path": "atlas/page.json"
+      },
+      {
+        "commits": 2,
+        "lines": 1256,
+        "path": "atlas/statistics.json"
+      },
+      {
+        "commits": 2,
+        "lines": 3612,
+        "path": "atlas/structure.json"
+      },
+      {
         "commits": 1,
         "lines": 127,
         "path": "design/data-contract.md"
@@ -475,8 +500,8 @@
         "path": "site/astro.config.mjs"
       },
       {
-        "commits": 2,
-        "lines": 13810,
+        "commits": 4,
+        "lines": 13822,
         "path": "site/package-lock.json"
       },
       {
@@ -520,8 +545,8 @@
         "path": "site/src/content/docs/handbook/security.md"
       },
       {
-        "commits": 1,
-        "lines": 209,
+        "commits": 2,
+        "lines": 211,
         "path": "site/src/content/docs/handbook/usage.md"
       },
       {
@@ -578,11 +603,11 @@
   },
   "confidence": {
     "level": "low",
-    "reason": "fewer than 30 qualifying commits in the window, and fewer than 20 source files reach 10 revisions"
+    "reason": "fewer than 30 qualifying commits in the window, and fewer than 25 source files reach 10 revisions"
   },
-  "generatedAt": "2026-10-01T02:57:02.154Z",
+  "generatedAt": "2026-10-15T01:58:33.304Z",
   "generatedFrom": {
-    "commit": "d11ed2bc6bf061f461163c778902d5e0d722c17c"
+    "commit": "917a66211c6bcd2ba060aef493f246c2bc952985"
   },
   "pairs": [],
   "parameters": {
@@ -595,16 +620,16 @@
     "floor": "fallen",
     "floorHeld": false,
     "floorTrigger": "both",
-    "headDate": "2026-09-30T19:31:45-07:00",
+    "headDate": "2026-10-14T21:58:30-04:00",
     "inScopeFiles": 79,
     "pinnedStart": null,
-    "priorFloor": null,
-    "qualifyingCommits": 16,
+    "priorFloor": "fallen",
+    "qualifyingCommits": 19,
     "qualifyingMinimum": 30,
     "revisions": 5,
     "shared": 10,
     "sharedFloorUsed": 3,
-    "since": "2026-04-04T02:31:45.000Z",
+    "since": "2026-04-18T01:58:30.000Z",
     "sourceExtensions": [
       ".js",
       ".mjs",
