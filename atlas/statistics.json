@@ -33,7 +33,7 @@
       "confidence": "low",
       "highWater": null,
       "name": "app",
-      "qualifyingSourceCommits": 3,
+      "qualifyingSourceCommits": 4,
       "rebaseline": null
     },
     {
@@ -68,7 +68,7 @@
       "confidence": "low",
       "highWater": null,
       "name": "executor",
-      "qualifyingSourceCommits": 5,
+      "qualifyingSourceCommits": 6,
       "rebaseline": null
     },
     {
@@ -160,8 +160,8 @@
         "path": ".gitignore"
       },
       {
-        "commits": 1,
-        "lines": 91,
+        "commits": 2,
+        "lines": 97,
         "path": "CHANGELOG.md"
       },
       {
@@ -215,8 +215,8 @@
         "path": "README.zh.md"
       },
       {
-        "commits": 2,
-        "lines": 50,
+        "commits": 3,
+        "lines": 52,
         "path": "SCORECARD.md"
       },
       {
@@ -245,8 +245,8 @@
         "path": "app/data.js"
       },
       {
-        "commits": 4,
-        "lines": 2414,
+        "commits": 5,
+        "lines": 2416,
         "path": "app/dist/control-panel.html"
       },
       {
@@ -365,13 +365,13 @@
         "path": "app/styles.css"
       },
       {
-        "commits": 4,
-        "lines": 629,
+        "commits": 5,
+        "lines": 631,
         "path": "app/ui.js"
       },
       {
-        "commits": 2,
-        "lines": 180,
+        "commits": 3,
+        "lines": 188,
         "path": "atlas/README.md"
       },
       {
@@ -380,18 +380,18 @@
         "path": "atlas/boundaries.yaml"
       },
       {
-        "commits": 2,
-        "lines": 568,
+        "commits": 3,
+        "lines": 594,
         "path": "atlas/page.json"
       },
       {
-        "commits": 2,
-        "lines": 1256,
+        "commits": 3,
+        "lines": 1307,
         "path": "atlas/statistics.json"
       },
       {
-        "commits": 2,
-        "lines": 3612,
+        "commits": 3,
+        "lines": 3632,
         "path": "atlas/structure.json"
       },
       {
@@ -410,8 +410,8 @@
         "path": "executor/README.md"
       },
       {
-        "commits": 2,
-        "lines": 4,
+        "commits": 3,
+        "lines": 6,
         "path": "executor/__init__.py"
       },
       {
@@ -485,13 +485,13 @@
         "path": "npm/bin/engine-room.mjs"
       },
       {
-        "commits": 1,
-        "lines": 25,
+        "commits": 2,
+        "lines": 27,
         "path": "npm/package.json"
       },
       {
-        "commits": 2,
-        "lines": 18,
+        "commits": 3,
+        "lines": 20,
         "path": "pyproject.toml"
       },
       {
@@ -605,9 +605,9 @@
     "level": "low",
     "reason": "fewer than 30 qualifying commits in the window, and fewer than 25 source files reach 10 revisions"
   },
-  "generatedAt": "2026-10-15T01:58:33.304Z",
+  "generatedAt": "2026-11-11T22:15:30.814Z",
   "generatedFrom": {
-    "commit": "917a66211c6bcd2ba060aef493f246c2bc952985"
+    "commit": "75118d1ebaec024c7694ca8c851b85aa7a9b5532"
   },
   "pairs": [],
   "parameters": {
@@ -620,7 +620,7 @@
     "floor": "fallen",
     "floorHeld": false,
     "floorTrigger": "both",
-    "headDate": "2026-10-14T21:58:30-04:00",
+    "headDate": "2026-10-14T19:04:26-07:00",
     "inScopeFiles": 79,
     "pinnedStart": null,
     "priorFloor": "fallen",
@@ -629,7 +629,7 @@
     "revisions": 5,
     "shared": 10,
     "sharedFloorUsed": 3,
-    "since": "2026-04-18T01:58:30.000Z",
+    "since": "2026-04-18T02:04:26.000Z",
     "sourceExtensions": [
       ".js",
       ".mjs",
